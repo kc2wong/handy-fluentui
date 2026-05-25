@@ -20,14 +20,12 @@ type ToastProviderProps = {
 
 const ToastProvider = ({ config, children }: ToastProviderProps) => {
 
-  const { label, dismissTimeout, position, toastCreator } = config ?? {};
+  const { dismissTimeout, position, toastCreator } = config ?? {};
 
   const { dispatchToast, updateToast } = useToastController();
 
   const show = useCallback(
-    (message: string, dismissLabel?: string, intent: ToastIntent = 'info') => {
-      const finalDismissLabel = dismissLabel || label?.dismiss;
-
+    (intent: ToastIntent, message: string, dismissLabel?: string, intentLabel?: string) => {
       if (toastCreator) {
         dispatchToast(toastCreator(message, intent), {
           intent,
@@ -37,9 +35,9 @@ const ToastProvider = ({ config, children }: ToastProviderProps) => {
         return;
       }
 
-      const dismissAction = finalDismissLabel ? (
+      const dismissAction = dismissLabel ? (
         <ToastTrigger>
-          <Link>{finalDismissLabel}</Link>
+          <Link>{dismissLabel}</Link>
         </ToastTrigger>
       ) : (
         <ToastTrigger>
@@ -47,27 +45,12 @@ const ToastProvider = ({ config, children }: ToastProviderProps) => {
         </ToastTrigger>
       );
 
-      let title: string | undefined = undefined;
-      if (intent === 'success') {
-        title = label?.success;
-      } else if (intent === 'info') {
-        title = label?.info;
-      } else if (intent === 'warning') {
-        title = label?.warning;
-      } else if (intent === 'error') {
-        title = label?.error;
-      }
+      const resolvedLabel = intentLabel ?? (intent.charAt(0).toUpperCase() + intent.slice(1));
 
       const buildContent = (action: React.ReactElement | null | undefined) => (
         <Toast appearance="inverted">
-          {title ? (
-            <>
-              <ToastTitle action={action}>{title}</ToastTitle>
-              <ToastBody>{message}</ToastBody>
-            </>
-          ) : (
-            <ToastTitle action={action}>{message}</ToastTitle>
-          )}
+          <ToastTitle action={action}>{resolvedLabel}</ToastTitle>
+          <ToastBody>{message}</ToastBody>
         </Toast>
       );
 

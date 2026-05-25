@@ -8,19 +8,11 @@ type ToastContextConfig = {
   position?: ToastPosition;
   /** Fully custom toast factory. When provided, built-in toast rendering is bypassed entirely. */
   toastCreator?: (message: string, intent: ToastIntent) => React.ReactElement<ToastProps>;
-  /** Default label showing as toast title  */
-  label?: {
-    dismiss?: string;
-    success?: string;
-    info?: string;
-    warning?: string;
-    error?: string;
-  };
 };
 
 /** Imperative toast handle. Prefer the useToast hook which provides intent-specific helpers. */
 type ToastContextType = {
-  show: (message: string, dismissLabel?: string, intent?: ToastIntent) => void;
+  show: (intent: ToastIntent, message: string, dismissLabel?: string, intentLabel?: string) => void;
 };
 
 const ToastContext = createContext<ToastContextType>({
