@@ -97,18 +97,12 @@ vi.mock('@hook/use-mobile', () => ({
   useIsMobile: () => mockIsMobile(),
 }));
 
-describe('InputMultiLangText', () => {
-  const mockComponent = {
-    inputMultiLang: {
-      label: {
-        languages: ['English', 'French', 'Spanish'],
-      },
-    },
-  };
+const THREE_LANGS = { languages: ['English', 'French', 'Spanish'] };
 
-  const renderWithContext = (ui: React.ReactElement, component = mockComponent) => {
+describe('InputMultiLangText', () => {
+  const renderWithContext = (ui: React.ReactElement) => {
     return render(
-      <HandyFluentUiContext.Provider value={{ component } as any}>
+      <HandyFluentUiContext.Provider value={{} as any}>
         {ui}
       </HandyFluentUiContext.Provider>,
     );
@@ -166,29 +160,24 @@ describe('InputMultiLangText', () => {
   });
 
   it('opens drawer when translate icon is clicked with correct labels', () => {
-    renderWithContext(<FuiInputMultiLangText label="MultiLang Label" onChange={() => {}} value={null} />);
+    renderWithContext(
+      <FuiInputMultiLangText label="MultiLang Label" langLabel={THREE_LANGS} onChange={() => {}} value={null} />,
+    );
 
     const translateIcon = screen.getByTestId('translate-icon');
     fireEvent.click(translateIcon);
 
     expect(screen.getByTestId('fluent-drawer')).toBeInTheDocument();
-    // drawerTitle is passed as props.label in FuiInputMultiLangText
     expect(screen.getByTestId('drawer-title')).toHaveTextContent('MultiLang Label');
     expect(screen.getByLabelText('English')).toBeInTheDocument();
     expect(screen.getByLabelText('French')).toBeInTheDocument();
     expect(screen.getByLabelText('Spanish')).toBeInTheDocument();
   });
 
-  it('renders only available languages from ComponentLabel', () => {
-    const customComponent = {
-      inputMultiLang: {
-        label: {
-          languages: ['English', 'French'],
-        },
-      },
-    };
-
-    renderWithContext(<FuiInputMultiLangText label="MultiLang" onChange={() => {}} value={null} />, customComponent);
+  it('renders only available languages from langLabel', () => {
+    renderWithContext(
+      <FuiInputMultiLangText label="MultiLang" langLabel={{ languages: ['English', 'French'] }} onChange={() => {}} value={null} />,
+    );
 
     fireEvent.click(screen.getByTestId('translate-icon'));
 
@@ -198,44 +187,32 @@ describe('InputMultiLangText', () => {
   });
 
   it('does not show translate icon if only 1 language is supported', () => {
-    const customComponent = {
-      inputMultiLang: {
-        label: {
-          languages: ['English'],
-        },
-      },
-    };
-
-    renderWithContext(<FuiInputMultiLangText label="MultiLang" onChange={() => {}} value={null} />, customComponent);
+    renderWithContext(
+      <FuiInputMultiLangText label="MultiLang" langLabel={{ languages: ['English'] }} onChange={() => {}} value={null} />,
+    );
 
     expect(screen.queryByTestId('translate-icon')).not.toBeInTheDocument();
   });
 
   it('does not show translate icon if languages is empty', () => {
-    const customComponent = {
-      inputMultiLang: {
-        label: {
-          languages: [],
-        },
-      },
-    };
-
-    renderWithContext(<FuiInputMultiLangText label="MultiLang" onChange={() => {}} value={null} />, customComponent);
+    renderWithContext(
+      <FuiInputMultiLangText label="MultiLang" langLabel={{ languages: [] }} onChange={() => {}} value={null} />,
+    );
 
     expect(screen.queryByTestId('translate-icon')).not.toBeInTheDocument();
   });
 
   it('sets drawer position based on mobile view', () => {
     const { rerender } = renderWithContext(
-      <FuiInputMultiLangText label="MultiLang" onChange={() => {}} value={null} />,
+      <FuiInputMultiLangText label="MultiLang" langLabel={THREE_LANGS} onChange={() => {}} value={null} />,
     );
     fireEvent.click(screen.getByTestId('translate-icon'));
     expect(screen.getByTestId('fluent-drawer')).toHaveAttribute('data-position', 'end');
 
     mockIsMobile.mockReturnValue(true);
     rerender(
-      <HandyFluentUiContext.Provider value={{ component: mockComponent } as any}>
-        <FuiInputMultiLangText label="MultiLang" onChange={() => {}} value={null} />
+      <HandyFluentUiContext.Provider value={{} as any}>
+        <FuiInputMultiLangText label="MultiLang" langLabel={THREE_LANGS} onChange={() => {}} value={null} />
       </HandyFluentUiContext.Provider>
     );
     expect(screen.getByTestId('fluent-drawer')).toHaveAttribute('data-position', 'bottom');
@@ -248,7 +225,9 @@ describe('InputMultiLangText', () => {
       valueInLangTwo: 'Fre',
       valueInLangThree: 'Spa',
     };
-    renderWithContext(<FuiInputMultiLangText label="MultiLang" onChange={handleChange} value={value} />);
+    renderWithContext(
+      <FuiInputMultiLangText label="MultiLang" langLabel={THREE_LANGS} onChange={handleChange} value={value} />,
+    );
 
     fireEvent.click(screen.getByTestId('translate-icon'));
 
@@ -303,7 +282,7 @@ describe('InputMultiLangText', () => {
 
   it('shows translate icon and passes readOnly to drawer fields when readOnly is true', () => {
     renderWithContext(
-      <FuiInputMultiLangText label="MultiLang" onChange={() => {}} readOnly value={null} />,
+      <FuiInputMultiLangText label="MultiLang" langLabel={THREE_LANGS} onChange={() => {}} readOnly value={null} />,
     );
 
     const translateIcon = screen.getByTestId('translate-icon');
@@ -317,7 +296,7 @@ describe('InputMultiLangText', () => {
 
   it('shows translate icon and passes disabled to drawer fields when disabled is true', () => {
     renderWithContext(
-      <FuiInputMultiLangText disabled label="MultiLang" onChange={() => {}} value={null} />,
+      <FuiInputMultiLangText disabled label="MultiLang" langLabel={THREE_LANGS} onChange={() => {}} value={null} />,
     );
 
     const translateIcon = screen.getByTestId('translate-icon');
@@ -331,7 +310,7 @@ describe('InputMultiLangText', () => {
 
   it('closes drawer when dismiss button is clicked', () => {
     renderWithContext(
-      <FuiInputMultiLangText label="MultiLang" onChange={() => {}} value={null} />,
+      <FuiInputMultiLangText label="MultiLang" langLabel={THREE_LANGS} onChange={() => {}} value={null} />,
     );
 
     fireEvent.click(screen.getByTestId('translate-icon'));
