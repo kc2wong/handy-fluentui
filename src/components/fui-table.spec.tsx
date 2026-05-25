@@ -158,21 +158,7 @@ vi.mock('./input-dropdown', () => ({
   ),
 }));
 const mockContextValue: any = {
-  component: {
-    fuiTable: {
-      label: {
-        pageSize: 'Rows :',
-        noData: 'No data found',
-        pageRange: '{{from}} to {{to}} of {{total}}',
-        paginationBar: {
-          next: 'Next page',
-          nextN: 'Next {{n}} pages',
-          previous: 'Previous page',
-          previousN: 'Previous {{n}} pages',
-        },
-      },
-    },
-  },
+  component: {},
 };
 
 // ── Tests ────────────────────────────────────────────────────────────────────
@@ -357,7 +343,7 @@ describe('FuiTable', () => {
     expect(onPageOrSort).toHaveBeenCalledWith({ offset: 0, pageSize: 10 }, undefined);
   });
 
-  it('renders localized labels from selected language', () => {
+  it('renders localized labels from langLabel prop', () => {
     const pagination = {
       offset: 0,
       pageSize: 5,
@@ -365,35 +351,28 @@ describe('FuiTable', () => {
       pageSizeOption: [5, 10, 20],
     };
 
-    const localContext: any = {
-      component: {
-        fuiTable: {
-          label: {
-            pageSize: '每頁行數:',
-            pageRange: '顯示 {{from}}-{{to}} 之 {{total}}',
-            paginationBar: {
-              next: '下一頁',
-              nextN: '下 {{n}} 頁',
-              previous: '上一頁',
-              previousN: '上 {{n}} 頁',
-            },
-          },
-        },
+    const zhLabel = {
+      pageSize: '每頁行數:',
+      pageRange: '顯示 {{from}}-{{to}} 之 {{total}}',
+      paginationBar: {
+        next: '下一頁',
+        nextN: '下 {{n}} 頁',
+        previous: '上一頁',
+        previousN: '上 {{n}} 頁',
       },
     };
 
     renderWithContext(
-      <FuiTable data={sampleData} pagination={pagination}>
+      <FuiTable data={sampleData} langLabel={zhLabel} pagination={pagination}>
         <FuiColumn field="name" header="Name" />
       </FuiTable>,
-      localContext
     );
 
     expect(screen.getByText('顯示 1-2 之 20')).toBeInTheDocument();
     expect(screen.getByText('每頁行數:')).toBeInTheDocument();
   });
 
-  it('falls back to the first language with labels if selected language has none', () => {
+  it('uses hardcoded defaults when no langLabel is provided', () => {
     const pagination = {
       offset: 0,
       pageSize: 5,
@@ -401,57 +380,16 @@ describe('FuiTable', () => {
       pageSizeOption: [5, 10, 20],
     };
 
-    const localContext: any = {
-      component: {
-        fuiTable: {
-          label: {
-            pageSize: '每頁行數:',
-            pageRange: '顯示 {{from}}-{{to}} 之 {{total}}',
-            paginationBar: {
-              next: '下一頁',
-              nextN: '下 {{n}} 頁',
-              previous: '上一頁',
-              previousN: '上 {{n}} 頁',
-            },
-          },
-        },
-      },
-    };
-
     renderWithContext(
       <FuiTable data={sampleData} pagination={pagination}>
         <FuiColumn field="name" header="Name" />
       </FuiTable>,
-      localContext
-    );
-
-    // It should find zh-HK labels as fallback
-    expect(screen.getByText('顯示 1-2 之 20')).toBeInTheDocument();
-    expect(screen.getByText('每頁行數:')).toBeInTheDocument();
-  });
-
-  it('uses hardcoded defaults if no language has labels', () => {
-    const pagination = {
-      offset: 0,
-      pageSize: 5,
-      totalRecord: 20,
-      pageSizeOption: [5, 10, 20],
-    };
-
-    const emptyContext: any = {
-      component: {},
-    };
-
-    renderWithContext(
-      <FuiTable data={sampleData} pagination={pagination}>
-        <FuiColumn field="name" header="Name" />
-      </FuiTable>,
-      emptyContext
     );
 
     expect(screen.getByText('1 to 2 of 20')).toBeInTheDocument();
     expect(screen.getByText('Rows :')).toBeInTheDocument();
   });
+
 
   it('renders filler rows when pagination is enabled', () => {
     const pagination = {
@@ -511,9 +449,9 @@ describe('FuiTable', () => {
     // 1 header + 5 filler rows = 6 rows.
     const rows = container.querySelectorAll('tr');
     expect(rows.length).toBe(6);
-    
-    // pagination bar should show "No data found" (from mockContextValue)
-    expect(screen.getByText('No data found')).toBeInTheDocument();
+
+    // default noData text
+    expect(screen.getByText('No data')).toBeInTheDocument();
   });
 
   it('renders customized noData message in pagination bar when totalRecord is 0', () => {
@@ -524,21 +462,10 @@ describe('FuiTable', () => {
       pageSizeOption: [5, 10, 20],
     };
 
-    const customContext: any = {
-      component: {
-        fuiTable: {
-          label: {
-            noData: 'CUSTOM_NO_DATA_FOUND',
-          },
-        },
-      },
-    };
-
     renderWithContext(
-      <FuiTable data={[]} pagination={pagination}>
+      <FuiTable data={[]} langLabel={{ noData: 'CUSTOM_NO_DATA_FOUND' }} pagination={pagination}>
         <FuiColumn field="name" header="Name" />
       </FuiTable>,
-      customContext
     );
 
     expect(screen.getByText('CUSTOM_NO_DATA_FOUND')).toBeInTheDocument();
