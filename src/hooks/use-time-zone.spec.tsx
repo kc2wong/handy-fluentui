@@ -97,7 +97,7 @@ describe('useTimeZone', () => {
     const date = new Date(Date.UTC(2023, 0, 1, 12, 0, 0));
     
     // Asia/Tokyo is UTC+9, so it should be 2023-01-01 21:00:00
-    const parts = result.current.datePartsInTimeZone(date);
+    const parts = result.current.zonedDate2LocalDate(date);
 
     expect(parts).toEqual({
       year: 2023,
@@ -127,7 +127,7 @@ describe('useTimeZone', () => {
     const date = new Date(Date.UTC(2023, 0, 1, 12, 0, 0));
     
     // America/Los_Angeles is UTC-8 (PST) in January
-    const parts = result.current.datePartsInTimeZone(date);
+    const parts = result.current.zonedDate2LocalDate(date);
 
     expect(parts).toEqual({
       year: 2023,
@@ -157,7 +157,7 @@ describe('useTimeZone', () => {
     const date = new Date(Date.UTC(2023, 0, 1, 12, 0, 0));
     
     // Provide explicit Tokyo time zone
-    const parts = result.current.datePartsInTimeZone(date, 'Asia/Tokyo');
+    const parts = result.current.zonedDate2LocalDate(date, 'Asia/Tokyo');
 
     expect(parts.hour).toBe(21); // UTC+9
   });
@@ -178,7 +178,7 @@ describe('useTimeZone', () => {
 
     const date = new Date(2023, 0, 1, 15, 30, 45); // Local time
     
-    const parts = result.current.datePartsInTimeZone(date, 'Invalid/TimeZone');
+    const parts = result.current.zonedDate2LocalDate(date, 'Invalid/TimeZone');
 
     // Should return local date parts
     expect(parts.hour).toBe(date.getHours());

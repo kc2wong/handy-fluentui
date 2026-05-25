@@ -38,14 +38,6 @@ function App() {
         default: 'light',
       }}
       component={{
-        fuiTable: {
-          label: {
-            pageSize: 'Rows:',
-            noData: 'No data found',
-            pageRange: '{{from}}–{{to}} of {{total}}',
-            paginationBar: { next: 'Next', nextN: 'Next {{n}}', previous: 'Prev', previousN: 'Prev {{n}}' },
-          },
-        },
         toast: { dismissTimeout: 3000, label: { success: 'Success', error: 'Error', info: 'Info', warning: 'Warning' } },
       }}
     >
@@ -61,7 +53,7 @@ function App() {
 |------|------|---------|-------------|
 | `mobileBreakpoint` | `number` | `600` | Viewport width (px) at which mobile layout and theme activate |
 | `supportedTheme` | `SupportedTheme` | built-in themes | Theme objects for web/mobile platforms |
-| `component` | `Component` | — | Label overrides for built-in component strings |
+| `component` | `Component` | — | Spinner and toast configuration |
 | `loggerConfig` | `{ logMessage? }` | `console.log` | Custom logger |
 | `children` | `ReactNode` | — | Required |
 
@@ -100,7 +92,7 @@ Component-specific labels (`FuiTable` pagination text, `FuiImageCarousel` toolti
 | `useSpinner()` | `{ show, hide }` | Show/hide the global overlay spinner |
 | `useDialog()` | `{ openDialog }` | Show an imperative confirmation dialog |
 | `useLogger()` | `(message, level?) => void` | Log via the configured logger |
-| `useTimeZone()` | `{ timeZone, setTimeZone, datePartsInTimeZone }` | Read, update, and decompose dates in the active time zone |
+| `useTimeZone()` | `{ timeZone, setTimeZone, zonedDate2LocalDate }` | Read, update, and decompose dates in the active time zone |
 
 All hooks throw if called outside `HandyFluentUiProvider`.
 
@@ -109,7 +101,7 @@ All hooks throw if called outside `HandyFluentUiProvider`.
 The provider initialises `timeZone` from `Intl.DateTimeFormat().resolvedOptions().timeZone` (the browser's local time zone). `useTimeZone` lets you read or override it and decompose a `Date` object into its constituent parts within that zone.
 
 ```tsx
-const { timeZone, setTimeZone, datePartsInTimeZone } = useTimeZone();
+const { timeZone, setTimeZone, zonedDate2LocalDate } = useTimeZone();
 
 // Read the active time zone
 console.log(timeZone); // e.g. 'Asia/Tokyo'
@@ -118,17 +110,17 @@ console.log(timeZone); // e.g. 'Asia/Tokyo'
 setTimeZone('America/New_York');
 
 // Extract date parts in the active time zone
-const parts = datePartsInTimeZone(new Date());
+const parts = zonedDate2LocalDate(new Date());
 // { year, month, day, hour, minute, second }
 
 // Extract date parts in an explicit time zone (overrides the active one for this call)
-const tokyoParts = datePartsInTimeZone(new Date(), 'Asia/Tokyo');
+const tokyoParts = zonedDate2LocalDate(new Date(), 'Asia/Tokyo');
 ```
 
-**`ZonedDateParts`**
+**`LocalDate`**
 
 ```ts
-type ZonedDateParts = {
+type LocalDate = {
   year: number;
   month: number;   // 1–12
   day: number;     // 1–31
@@ -142,7 +134,7 @@ type ZonedDateParts = {
 |---|---|---|
 | `timeZone` | `string` | Currently active IANA time zone identifier |
 | `setTimeZone` | `(tz: string) => void` | Update the active time zone. Invalid identifiers are ignored and logged as a warning. |
-| `datePartsInTimeZone` | `(date: Date, tz?: string) => ZonedDateParts` | Decompose a `Date` into year/month/day/hour/minute/second in the active (or an explicitly supplied) time zone. Falls back to local time and logs a warning if `tz` is invalid. |
+| `zonedDate2LocalDate` | `(date: Date, tz?: string) => LocalDate` | Decompose a `Date` into year/month/day/hour/minute/second in the active (or an explicitly supplied) time zone. Falls back to local time and logs a warning if `tz` is invalid. |
 
 ---
 
