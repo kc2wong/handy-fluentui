@@ -38,7 +38,7 @@ function App() {
         default: 'light',
       }}
       component={{
-        toast: { dismissTimeout: 3000, label: { success: 'Success', error: 'Error', info: 'Info', warning: 'Warning' } },
+        toast: { dismissTimeout: 3000 },
       }}
     >
       {/* your app */}

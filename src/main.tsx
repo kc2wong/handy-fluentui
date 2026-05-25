@@ -54,13 +54,9 @@ const kidsTheme = {
 
 export type Lang = 'en' | 'zh-TW';
 
-const makeComponentConfig = (lang: Lang) => ({
+const makeComponentConfig = (_lang: Lang) => ({
   toast: {
     dismissTimeout: 3000,
-    label:
-      lang === 'en'
-        ? { success: 'Success', error: 'Error', info: 'Info', warning: 'Warning' }
-        : { success: '成功', error: '錯誤', info: '資訊', warning: '警告' },
   },
 });
 

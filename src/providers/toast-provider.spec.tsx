@@ -1,4 +1,5 @@
 import { render, screen, act } from '@testing-library/react';
+import { ToastIntent } from '@fluentui/react-components';
 import React, { useContext } from 'react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
@@ -37,13 +38,15 @@ const TestComponent = ({
   message,
   dismissLabel,
   intent,
+  intentLabel,
 }: {
   message: string;
   dismissLabel?: string;
-  intent?: any;
+  intent?: ToastIntent;
+  intentLabel?: string;
 }) => {
   const { show } = useContext(FuiToastContext);
-  return <button onClick={() => show(message, dismissLabel, intent)}>Show Toast</button>;
+  return <button onClick={() => show(intent ?? 'info', message, dismissLabel, intentLabel)}>Show Toast</button>;
 };
 
 describe('ToastProvider', () => {
@@ -77,7 +80,7 @@ describe('ToastProvider', () => {
     expect(screen.getByTestId('toaster')).toBeInTheDocument();
   });
 
-  it('uses message as ToastTitle when no title is resolved and omits ToastBody', () => {
+  it('uses capitalized intent as ToastTitle and message as ToastBody when no intentLabel is provided', () => {
     renderWithContext(
       <ToastProvider>
         <TestComponent intent="info" message="Simple Message" />
@@ -89,22 +92,15 @@ describe('ToastProvider', () => {
     });
 
     const toastElement = mockDispatchToast.mock.calls[0][0];
-    const toastTitle = toastElement.props.children;
-    expect(toastTitle.props.children).toContain('Simple Message');
+    expect(toastElement.props.children[0].props.children).toBe('Info');
+    expect(toastElement.props.children[1].props.children).toBe('Simple Message');
   });
 
-  it('renders both ToastTitle and ToastBody when title is resolved via ComponentLabel', () => {
-    const component = {
-      toast: {
-        label: { success: 'SUCCESS_TITLE' },
-      },
-    };
-
+  it('renders both ToastTitle and ToastBody when intentLabel is provided', () => {
     renderWithContext(
-      <ToastProvider config={component.toast}>
-        <TestComponent intent="success" message="The actual message" />
+      <ToastProvider>
+        <TestComponent intent="success" intentLabel="SUCCESS_TITLE" message="The actual message" />
       </ToastProvider>,
-      component,
     );
 
     act(() => {
@@ -112,9 +108,8 @@ describe('ToastProvider', () => {
     });
 
     const toastElement = mockDispatchToast.mock.calls[0][0];
-    const fragmentChildren = toastElement.props.children.props.children;
-    expect(fragmentChildren[0].props.children).toContain('SUCCESS_TITLE');
-    expect(fragmentChildren[1].props.children).toBe('The actual message');
+    expect(toastElement.props.children[0].props.children).toBe('SUCCESS_TITLE');
+    expect(toastElement.props.children[1].props.children).toBe('The actual message');
   });
 
   it('uses toastCreator when provided', () => {
@@ -137,18 +132,11 @@ describe('ToastProvider', () => {
     expect(toastElement.props.children).toBe('Custom Message');
   });
 
-  it('uses dismissLabel from ComponentLabel as fallback', () => {
-    const component = {
-      toast: {
-        label: { dismiss: 'Config Dismiss' },
-      },
-    };
-
+  it('renders dismiss link when dismissLabel is provided to show()', () => {
     renderWithContext(
-      <ToastProvider config={component.toast}>
-        <TestComponent message="Test Message" />
+      <ToastProvider>
+        <TestComponent dismissLabel="My Dismiss" message="Test Message" />
       </ToastProvider>,
-      component,
     );
 
     act(() => {
@@ -157,22 +145,15 @@ describe('ToastProvider', () => {
 
     expect(mockDispatchToast).toHaveBeenCalled();
     const toastElement = mockDispatchToast.mock.calls[0][0];
-    const action = toastElement.props.children.props.action;
-    expect(action.props.children.props.children).toBe('Config Dismiss');
+    const action = toastElement.props.children[0].props.action;
+    expect(action.props.children.props.children).toBe('My Dismiss');
   });
 
-  it('prefers dismissLabel from show() call over ComponentLabel', () => {
-    const component = {
-      toast: {
-        label: { dismiss: 'Config Dismiss' },
-      },
-    };
-
+  it('renders dismiss icon when no dismissLabel is provided', () => {
     renderWithContext(
-      <ToastProvider config={component.toast}>
-        <TestComponent dismissLabel="Call Dismiss" message="Test Message" />
+      <ToastProvider>
+        <TestComponent message="Test Message" />
       </ToastProvider>,
-      component,
     );
 
     act(() => {
@@ -181,8 +162,10 @@ describe('ToastProvider', () => {
 
     expect(mockDispatchToast).toHaveBeenCalled();
     const toastElement = mockDispatchToast.mock.calls[0][0];
-    const action = toastElement.props.children.props.action;
-    expect(action.props.children.props.children).toBe('Call Dismiss');
+    const action = toastElement.props.children[0].props.action;
+    // DismissRegular icon rendered — action exists but has no link text
+    expect(action).toBeDefined();
+    expect(action.props.children.props.children).toBeUndefined();
   });
 
   it('uses dismissTimeout from config', () => {
@@ -234,7 +217,7 @@ describe('ToastProvider', () => {
 
     // The dismiss button must not appear until dismissTimeout elapses
     const toastElement = mockDispatchToast.mock.calls[0][0];
-    expect(toastElement.props.children.props.action).toBeUndefined();
+    expect(toastElement.props.children[0].props.action).toBeUndefined();
   });
 
   it('error toast reveals dismiss action via updateToast after dismissTimeout', () => {
@@ -263,7 +246,7 @@ describe('ToastProvider', () => {
     // toastId must match the one used in the initial dispatchToast
     expect(toastId).toBe(mockDispatchToast.mock.calls[0][1].toastId);
     // Dismiss action is now present
-    expect(content.props.children.props.action).toBeDefined();
+    expect(content.props.children[0].props.action).toBeDefined();
 
     vi.useRealTimers();
   });
@@ -284,7 +267,7 @@ describe('ToastProvider', () => {
       expect.objectContaining({ timeout: -1 }),
     );
     const toastElement = mockDispatchToast.mock.calls[0][0];
-    expect(toastElement.props.children.props.action).toBeDefined();
+    expect(toastElement.props.children[0].props.action).toBeDefined();
     expect(mockUpdateToast).not.toHaveBeenCalled();
   });
 
