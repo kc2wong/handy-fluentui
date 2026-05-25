@@ -2,7 +2,7 @@ import { useContext } from 'react';
 
 import { HandyFluentUiContext } from '@context/handy-fluent-ui-context';
 
-type ZonedDateParts = {
+type LocalDate = {
   year: number;
   month: number;
   day: number;
@@ -34,7 +34,7 @@ const useTimeZone = () => {
     }
   };
 
-  const datePartsInTimeZone = (date: Date, tz?: string): ZonedDateParts => {
+  const zonedDate2LocalDate = (date: Date, tz?: string): LocalDate => {
     if (tz && !isValidTimeZone(tz)) {
       return {
         year: date.getFullYear(),
@@ -82,9 +82,9 @@ const useTimeZone = () => {
   return {
     timeZone: ctx.timeZone,
     setTimeZone,
-    datePartsInTimeZone,
+    zonedDate2LocalDate,
   };
 };
 
 export { useTimeZone };
-export type { ZonedDateParts };
+export type { LocalDate };
