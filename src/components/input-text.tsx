@@ -52,7 +52,6 @@ const RawInputText: React.FC<
   };
 
   const inputType = type === 'password' && showPassword ? 'text' : type;
-  const hasValue = (props.value?.length ?? 0) > 0;
 
   return (
     <Input
@@ -60,18 +59,14 @@ const RawInputText: React.FC<
       className={className}
       contentAfter={
         type === 'password' ? (
-          hasValue ? (
-            <Button
-              appearance="subtle"
-              icon={showPassword ? <EyeOffRegular /> : <EyeRegular />}
-              onClick={togglePasswordVisibility}
-              size="small"
-              type="button"
-            />
-          ) : undefined
-        ) : (
-          rest.contentAfter
-        )
+          <Button
+            appearance="subtle"
+            icon={showPassword ? <EyeOffRegular /> : <EyeRegular />}
+            onClick={togglePasswordVisibility}
+            size="small"
+            type="button"
+          />
+        ) : rest.contentAfter
       }
       onChange={(_ev, data) => handleChange(data.value)}
       onKeyDown={handleKeyDown}

@@ -171,23 +171,6 @@ describe('InputText', () => {
     expect(screen.getByTestId('eye-icon')).toBeInTheDocument();
   });
 
-  it('hides the eye icon when value is empty and shows it once a value is entered', () => {
-    const { rerender } = render(
-      <FuiInputText label="Password" onChange={() => {}} type="password" value={null} />,
-    );
-
-    expect(screen.queryByTestId('content-after')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('fluent-button')).not.toBeInTheDocument();
-
-    rerender(<FuiInputText label="Password" onChange={() => {}} type="password" value="secret" />);
-    expect(screen.getByTestId('fluent-button')).toBeInTheDocument();
-    expect(screen.getByTestId('eye-icon')).toBeInTheDocument();
-
-    rerender(<FuiInputText label="Password" onChange={() => {}} type="password" value="" />);
-    expect(screen.queryByTestId('content-after')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('fluent-button')).not.toBeInTheDocument();
-  });
-
   it('supports className and style', () => {
     const customStyle = { color: 'red' };
     render(
