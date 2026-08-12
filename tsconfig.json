@@ -20,7 +20,7 @@
       "@context/*": ["./src/contexts/*"],
       "@hook/*": ["./src/hooks/*"],
       "@provider/*": ["./src/providers/*"],
-      "@util/*": ["./src/utils/*"]
+      "@util/*": ["./src/lib/*"]
     }
   },
   "include": ["src"]

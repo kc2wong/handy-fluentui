@@ -8,7 +8,7 @@ import {
   tokens,
 } from '@fluentui/react-components';
 import { ChevronDownRegular, ChevronUpRegular } from '@fluentui/react-icons';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import { useIsMobile } from '@hook/use-mobile';
 
@@ -89,12 +89,14 @@ const RawInputNumber: React.FC<
   const styles = useStyles();
   const [isFocused, setIsFocused] = useState(false);
   const [inputValue, setInputValue] = useState<string>(value !== null ? value.toString() : '');
+  // Tracks the last `value` synced into `inputValue`, so an external value change while
+  // unfocused is picked up during render (avoids the extra render pass a useEffect would add).
+  const [syncedValue, setSyncedValue] = useState(value);
 
-  useEffect(() => {
-    if (!isFocused) {
-      setInputValue(value !== null ? value.toString() : '');
-    }
-  }, [value, isFocused]);
+  if (!isFocused && value !== syncedValue) {
+    setSyncedValue(value);
+    setInputValue(value !== null ? value.toString() : '');
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const key = e.key;

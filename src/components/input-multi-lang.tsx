@@ -57,11 +57,17 @@ const useStyles = makeStyles({
     maxWidth: '60vw',
     maxHeight: '100vh',
   },
+  drawerHeader: {
+    paddingLeft: tokens.spacingHorizontalXXL,
+    paddingRight: tokens.spacingHorizontalXXL,
+  },
   drawerBody: {
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingVerticalL,
     padding: tokens.spacingVerticalL,
+    paddingLeft: tokens.spacingHorizontalXXL,
+    paddingRight: tokens.spacingHorizontalXXL,
     overflowY: 'auto',
   },
 });
@@ -138,7 +144,7 @@ const RawInputMultiLangText: React.FC<
       open={isDrawerOpen}
       position={isMobile ? 'bottom' : 'end'}
     >
-      <DrawerHeader>
+      <DrawerHeader className={styles.drawerHeader}>
         <DrawerHeaderTitle
           action={
             <Button

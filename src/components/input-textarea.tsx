@@ -18,7 +18,7 @@ type BaseInputTextAreaProps = Omit<TextareaProps, 'defaultValue' | 'id' | 'value
 type InputTextAreaProps = BaseInputTextAreaProps & FieldLayoutProps;
 
 const RawTextArea: React.FC<BaseInputTextAreaProps & { id?: string }> = (props) => {
-  const { value, onChange, className, style, readOnly = false, ...rest } = props;
+  const { value, onChange, className, style, readOnly = false, rows = 4, ...rest } = props;
   return (
     <Textarea
       {...rest}
@@ -28,6 +28,7 @@ const RawTextArea: React.FC<BaseInputTextAreaProps & { id?: string }> = (props) 
           onChange(data.value ?? null);
         }
       }}
+      rows={rows}
       style={style}
       value={value ?? ''}
     />

@@ -9,6 +9,10 @@ export default defineConfig({
     react(),
     dts({
       tsconfigPath: './tsconfig.lib.json',
+      // Roll every emitted .d.ts up into a single dist/index.d.ts (via @microsoft/api-extractor,
+      // the same tool @fluentui/react-components itself uses), instead of one .d.ts per source file.
+      // Named `rollupTypes` in this installed vite-plugin-dts v4 (v5 renamed it to `bundleTypes`).
+      rollupTypes: true,
     }),
   ],
   build: {
@@ -40,7 +44,7 @@ export default defineConfig({
       '@context': path.resolve(__dirname, 'src/contexts'),
       '@hook': path.resolve(__dirname, 'src/hooks'),
       '@provider': path.resolve(__dirname, 'src/providers'),
-      '@util': path.resolve(__dirname, 'src/utils'),
+      '@util': path.resolve(__dirname, 'src/lib'),
     },
   },
 });

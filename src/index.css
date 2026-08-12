@@ -1,3 +1,9 @@
+html {
+  /* Reserve the scrollbar's width whether or not it's currently needed, so centered layouts
+     don't shift horizontally when switching between content of different heights. */
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',

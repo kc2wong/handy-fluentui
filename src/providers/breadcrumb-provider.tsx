@@ -8,9 +8,17 @@ import { BreadcrumbItem, FuiBreadcrumbContext } from '@context/breadcrumb-contex
  */
 const BreadcrumbProvider = ({ children }: { children: ReactNode }) => {
   const [breadcrumbItems, setBreadcrumbItems] = useState<BreadcrumbItem[]>([]);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <FuiBreadcrumbContext.Provider value={{ items: breadcrumbItems, setItems: setBreadcrumbItems }}>
+    <FuiBreadcrumbContext.Provider
+      value={{
+        items: breadcrumbItems,
+        setItems: setBreadcrumbItems,
+        isCollapsed,
+        setIsCollapsed,
+      }}
+    >
       {children}
     </FuiBreadcrumbContext.Provider>
   );

@@ -99,7 +99,7 @@ const InputGroup = <T extends GroupableInputProps<string | number | Date>>(
     <EnhancedInputGroup
       {...(props as any)}
       className={className}
-      direction={isMobile ? 'vertical' : props.direction}
+      layout={isMobile ? 'vertical' : props.layout}
       noMessage={true}
       onClear={onClear}
       style={style}

@@ -1406,6 +1406,15 @@
   resolved "https://registry.yarnpkg.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz#6912b00d2c631c0d15ce1a7ab57cd657f2a8f8ba"
   integrity sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==
 
+"@microsoft/api-extractor-model@7.33.10":
+  version "7.33.10"
+  resolved "https://registry.yarnpkg.com/@microsoft/api-extractor-model/-/api-extractor-model-7.33.10.tgz#5ccd00c18877b315322b80dabc42fb66bc9c896c"
+  integrity sha512-uPUK17xGxeQ3av6TN7awp+dTTSTvx8fZC0XFL1gyt7hFapYuxND3XLXH8vkmI7UjfW92oogzFAFqHSifmJROaw==
+  dependencies:
+    "@microsoft/tsdoc" "~0.16.0"
+    "@microsoft/tsdoc-config" "~0.18.1"
+    "@rushstack/node-core-library" "5.23.3"
+
 "@microsoft/api-extractor-model@7.33.8":
   version "7.33.8"
   resolved "https://registry.yarnpkg.com/@microsoft/api-extractor-model/-/api-extractor-model-7.33.8.tgz#d715b0090610cce62c0b248a3eb07466cb10e9f1"
@@ -1427,6 +1436,25 @@
     "@rushstack/rig-package" "0.7.3"
     "@rushstack/terminal" "0.24.0"
     "@rushstack/ts-command-line" "5.3.9"
+    diff "~8.0.2"
+    minimatch "10.2.3"
+    resolve "~1.22.1"
+    semver "~7.7.4"
+    source-map "~0.6.1"
+    typescript "5.9.3"
+
+"@microsoft/api-extractor@^7.58.12":
+  version "7.58.12"
+  resolved "https://registry.yarnpkg.com/@microsoft/api-extractor/-/api-extractor-7.58.12.tgz#37c24cd672f25f7b77f6ff389c1d402b6fc7a222"
+  integrity sha512-VNpgC/1LaroLbn+UKmwDYspq+9r3EHyj4vJ3qUy/g8vB0rKt+1Wgs7WFj/JGpgxhG8SNyXs1XwYwe7nqkk8IDg==
+  dependencies:
+    "@microsoft/api-extractor-model" "7.33.10"
+    "@microsoft/tsdoc" "~0.16.0"
+    "@microsoft/tsdoc-config" "~0.18.1"
+    "@rushstack/node-core-library" "5.23.3"
+    "@rushstack/rig-package" "0.7.3"
+    "@rushstack/terminal" "0.24.2"
+    "@rushstack/ts-command-line" "5.3.12"
     diff "~8.0.2"
     minimatch "10.2.3"
     resolve "~1.22.1"
@@ -1618,6 +1646,20 @@
     resolve "~1.22.1"
     semver "~7.7.4"
 
+"@rushstack/node-core-library@5.23.3":
+  version "5.23.3"
+  resolved "https://registry.yarnpkg.com/@rushstack/node-core-library/-/node-core-library-5.23.3.tgz#517384a20a48a633b4a464c34ad5c554a54320dd"
+  integrity sha512-f6uuza7Um65bwsIJgf0MRs7IPA5IG+A+zs1AYGQvpZmLjtTGdfHowhQw4kwF0pPhJCrU4UHNhK8Qa6tLygYZCA==
+  dependencies:
+    ajv "~8.20.0"
+    ajv-draft-04 "~1.0.0"
+    ajv-formats "~3.0.1"
+    fs-extra "~11.3.0"
+    import-lazy "~4.0.0"
+    jju "~1.4.0"
+    resolve "~1.22.1"
+    semver "~7.7.4"
+
 "@rushstack/problem-matcher@0.2.1":
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/@rushstack/problem-matcher/-/problem-matcher-0.2.1.tgz#e9f6cac2dd6a882d60e76a8d4462b7d24b4f17e5"
@@ -1639,6 +1681,25 @@
     "@rushstack/node-core-library" "5.23.1"
     "@rushstack/problem-matcher" "0.2.1"
     supports-color "~8.1.1"
+
+"@rushstack/terminal@0.24.2":
+  version "0.24.2"
+  resolved "https://registry.yarnpkg.com/@rushstack/terminal/-/terminal-0.24.2.tgz#964ad39fa85e6668fc2aba652fcb042b96134425"
+  integrity sha512-KB7PpvzDyKMw/RGU3TxOwxTs3OwZ4gq6+WHlTJN/JfQH4ezliNtWIqver78jTaAJyz/ZAAlJGH7a/M1WyFLFSw==
+  dependencies:
+    "@rushstack/node-core-library" "5.23.3"
+    "@rushstack/problem-matcher" "0.2.1"
+    supports-color "~8.1.1"
+
+"@rushstack/ts-command-line@5.3.12":
+  version "5.3.12"
+  resolved "https://registry.yarnpkg.com/@rushstack/ts-command-line/-/ts-command-line-5.3.12.tgz#7d6dd8077ae7e38d61ae9fe5b0906dc3f6cea650"
+  integrity sha512-Vg2n24arSf7JvUNga2DMHYTbxnVq9L5OtVCp4Gfr8YC/kmL/bmdR8FQhGcpMzMYNY9Vdw3+TaimG11Sf+z1Tpw==
+  dependencies:
+    "@rushstack/terminal" "0.24.2"
+    "@types/argparse" "1.0.38"
+    argparse "~1.0.9"
+    string-argv "~0.3.1"
 
 "@rushstack/ts-command-line@5.3.9":
   version "5.3.9"
@@ -2176,7 +2237,7 @@ ajv@^6.14.0:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-ajv@^8.0.0:
+ajv@^8.0.0, ajv@~8.20.0:
   version "8.20.0"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-8.20.0.tgz#304b3636add88ba7d936760dd50ece006dea95f9"
   integrity sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==

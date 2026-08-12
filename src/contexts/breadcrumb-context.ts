@@ -16,6 +16,10 @@ type BreadcrumbContextType = {
   items: BreadcrumbItem[];
   /** State setter for the breadcrumb items. */
   setItems: React.Dispatch<React.SetStateAction<BreadcrumbItem[]>>;
+  /** Whether the trail is collapsed down to first > … > last (true) or showing all items (false). */
+  isCollapsed: boolean;
+  /** State setter for isCollapsed. */
+  setIsCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const BreadcrumbContext = createContext<BreadcrumbContextType | undefined>(undefined);

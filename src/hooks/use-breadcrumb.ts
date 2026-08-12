@@ -20,6 +20,15 @@ const useBreadcrumb = () => {
     /** Current breadcrumb items in the trail. */
     items: [...ctx.items],
 
+    /** Whether the trail is collapsed down to first > … > last (true) or showing all items (false). */
+    isCollapsed: ctx.isCollapsed,
+
+    /** Toggles between the collapsed (first > … > last) and full display of the trail. */
+    toggleCollapsed: () => {
+      logger.debug('[useBreadcrumb] toggleCollapsed()');
+      ctx.setIsCollapsed((prev) => !prev);
+    },
+
     /** Resets the trail with the provided item. Action is reconstructed to handle truncation. */
     start: (item: BreadcrumbItem) => {
       logger.debug(`[useBreadcrumb] start() with tag ${item.tag}`);

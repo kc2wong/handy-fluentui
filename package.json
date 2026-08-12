@@ -36,13 +36,13 @@
     "lint": "eslint ."
   },
   "peerDependencies": {
-    "@fluentui/react-components": "^9.0.0",
     "@fluentui/react-calendar-compat": ">=0.1.0",
+    "@fluentui/react-components": "^9.0.0",
     "@fluentui/react-datepicker-compat": ">=0.1.0",
     "@fluentui/react-icons": "^2.0.0",
-    "usehooks-ts": "^3.0.0",
     "react": "^18.0.0 || ^19.0.0",
-    "react-dom": "^18.0.0 || ^19.0.0"
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "usehooks-ts": "^3.0.0"
   },
   "dependencies": {},
   "devDependencies": {
@@ -50,6 +50,7 @@
     "@fluentui/react-components": "^9.73.8",
     "@fluentui/react-datepicker-compat": "^0.6.31",
     "@fluentui/react-icons": "^2.0.324",
+    "@microsoft/api-extractor": "^7.58.12",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

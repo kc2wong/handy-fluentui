@@ -28,9 +28,13 @@ const useStyles = makeStyles({
   },
   drawerHeader: {
     paddingBottom: tokens.spacingVerticalM,
+    paddingLeft: tokens.spacingHorizontalXXL,
+    paddingRight: tokens.spacingHorizontalXXL,
   },
   listboxWrapper: {
     padding: tokens.spacingVerticalM,
+    paddingLeft: tokens.spacingHorizontalXXL,
+    paddingRight: tokens.spacingHorizontalXXL,
   },
 });
 

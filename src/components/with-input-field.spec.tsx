@@ -47,10 +47,10 @@ vi.mock('@fluentui/react-components', () => ({
     eraserIcon: 'eraser-icon-style',
     labelHorizontal: 'label-horizontal',
     labelHorizontalColumn: 'label-horizontal-column',
-    labelSmall: 'label-small',
-    labelMedium: 'label-medium',
-    labelLarge: 'label-large',
-    labelNone: 'label-none',
+    labelQuarter: 'label-quarter',
+    labelThird: 'label-third',
+    labelHalf: 'label-half',
+    labelAuto: 'label-auto',
     labelComponent: 'label-component-style',
     labelText: 'label-text-style',
     fieldGroup: 'field-group',
@@ -87,8 +87,8 @@ describe('withInputField HOC', () => {
       expect(container.firstChild).not.toHaveClass('root-horizontal');
     });
 
-    it('uses horizontal flex layout when direction is horizontal', () => {
-      const { container } = render(<Enhanced direction="horizontal" label="Name" />);
+    it('uses horizontal flex layout when layout is horizontal', () => {
+      const { container } = render(<Enhanced label="Name" layout="horizontal" />);
       expect(container.firstChild).toHaveClass('root-horizontal');
       expect(container.firstChild).toHaveClass('root-horizontal-row');
       expect(container.firstChild).not.toHaveClass('root-vertical');
@@ -96,14 +96,14 @@ describe('withInputField HOC', () => {
 
     it('uses horizontal-column layout in mobile horizontal mode', () => {
       mockIsMobile.mockReturnValue(true);
-      const { container } = render(<Enhanced direction="horizontal" label="Name" />);
+      const { container } = render(<Enhanced label="Name" layout="horizontal" />);
       expect(container.firstChild).toHaveClass('root-horizontal');
       expect(container.firstChild).toHaveClass('root-horizontal-column');
       expect(container.firstChild).not.toHaveClass('root-horizontal-row');
     });
 
-    it('falls back to vertical layout when label is null even if direction is horizontal', () => {
-      const { container } = render(<Enhanced direction="horizontal" label={null} />);
+    it('falls back to vertical layout when label is null even if layout is horizontal', () => {
+      const { container } = render(<Enhanced label={null} layout="horizontal" />);
       expect(container.firstChild).toHaveClass('root-vertical');
     });
 
@@ -120,33 +120,33 @@ describe('withInputField HOC', () => {
       const { container } = render(<Enhanced label="Name" />);
       const labelContainer = container.querySelector('.label-container') as HTMLElement;
       expect(labelContainer).not.toHaveClass('label-horizontal');
-      expect(labelContainer).not.toHaveClass('label-small');
-      expect(labelContainer).not.toHaveClass('label-medium');
-      expect(labelContainer).not.toHaveClass('label-large');
+      expect(labelContainer).not.toHaveClass('label-quarter');
+      expect(labelContainer).not.toHaveClass('label-third');
+      expect(labelContainer).not.toHaveClass('label-half');
     });
 
-    it('applies label-horizontal and medium width by default in horizontal mode', () => {
-      const { container } = render(<Enhanced direction="horizontal" label="Name" />);
+    it('applies label-horizontal and quarter width by default in horizontal mode', () => {
+      const { container } = render(<Enhanced label="Name" layout="horizontal" />);
       const labelContainer = container.querySelector('.label-container') as HTMLElement;
       expect(labelContainer).toHaveClass('label-horizontal');
-      expect(labelContainer).toHaveClass('label-medium');
+      expect(labelContainer).toHaveClass('label-quarter');
     });
 
     it('applies label-horizontal-column in mobile horizontal mode', () => {
       mockIsMobile.mockReturnValue(true);
-      const { container } = render(<Enhanced direction="horizontal" label="Name" />);
+      const { container } = render(<Enhanced label="Name" layout="horizontal" />);
       const labelContainer = container.querySelector('.label-container') as HTMLElement;
       expect(labelContainer).toHaveClass('label-horizontal');
       expect(labelContainer).toHaveClass('label-horizontal-column');
     });
 
     it.each([
-      ['small', 'label-small'],
-      ['medium', 'label-medium'],
-      ['large', 'label-large'],
-      ['none', 'label-none'],
+      ['quarter', 'label-quarter'],
+      ['third', 'label-third'],
+      ['half', 'label-half'],
+      ['auto', 'label-auto'],
     ] as const)('applies %s width class in horizontal mode', (width, expectedClass) => {
-      const { container } = render(<Enhanced direction="horizontal" label="Name" labelWidth={width} />);
+      const { container } = render(<Enhanced label="Name" labelWidth={width} layout="horizontal" />);
       expect(container.querySelector('.label-container')).toHaveClass(expectedClass);
     });
   });

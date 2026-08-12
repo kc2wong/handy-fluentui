@@ -16,9 +16,9 @@ import {
   Option,
   Divider,
   mergeClasses,
-  Tooltip,
 } from '@fluentui/react-components';
 import {
+  ArrowSortRegular,
   ChevronDoubleLeftRegular,
   ChevronDoubleRightRegular,
   ChevronLeftRegular,
@@ -30,6 +30,7 @@ import { useLogger } from '@hook/use-logger';
 import { useIsMobile } from '@hook/use-mobile';
 import { template } from '@util/string-util';
 
+import { FuiTooltip } from './fui-tooltip';
 import { FuiMobileDropdown } from './input-dropdown';
 
 // ── Styles ───────────────────────────────────────────────────────────────────
@@ -153,9 +154,7 @@ type ColumnWithNeither = ColumnPropsBase & {
 
 /** Column definition union. Use formatter for text cells, builder for rich content, neither for plain string cast. */
 type ColumnProps<T = Record<string, unknown>> =
-  | ColumnWithFormatter<T>
-  | ColumnWithBuilder<T>
-  | ColumnWithNeither;
+  ColumnWithFormatter<T> | ColumnWithBuilder<T> | ColumnWithNeither;
 
 /** Label overrides for FuiTable pagination text. All fields are optional; built-in English defaults are used for any omitted field. */
 type FuiTableLabel = {
@@ -278,7 +277,7 @@ const PaginationBar = ({
     <div className={mergeClasses(styles.paginationBar, isMobile && styles.paginationBarMobile)}>
       {/* Row 1 — navigation */}
       <div className={mergeClasses(styles.navRow, isMobile && styles.navRowMobile)}>
-        <Tooltip content={prevNLabel} relationship="label">
+        <FuiTooltip text={prevNLabel}>
           <Button
             appearance="subtle"
             aria-label={prevNLabel}
@@ -286,8 +285,8 @@ const PaginationBar = ({
             icon={<ChevronDoubleLeftRegular />}
             onClick={() => onPageChange(Math.max(0, offset - fastForwardPage * pageSize), pageSize)}
           />
-        </Tooltip>
-        <Tooltip content={prevLabel} relationship="label">
+        </FuiTooltip>
+        <FuiTooltip text={prevLabel}>
           <Button
             appearance="subtle"
             aria-label={prevLabel}
@@ -295,11 +294,11 @@ const PaginationBar = ({
             icon={<ChevronLeftRegular />}
             onClick={() => onPageChange(Math.max(0, offset - pageSize), pageSize)}
           />
-        </Tooltip>
+        </FuiTooltip>
         <span className={styles.range}>
           <Body1>{pageRange}</Body1>
         </span>
-        <Tooltip content={nextLabel} relationship="label">
+        <FuiTooltip text={nextLabel}>
           <Button
             appearance="subtle"
             aria-label={nextLabel}
@@ -307,8 +306,8 @@ const PaginationBar = ({
             icon={<ChevronRightRegular />}
             onClick={() => onPageChange(offset + pageSize, pageSize)}
           />
-        </Tooltip>
-        <Tooltip content={nextNLabel} relationship="label">
+        </FuiTooltip>
+        <FuiTooltip text={nextNLabel}>
           <Button
             appearance="subtle"
             aria-label={nextNLabel}
@@ -316,7 +315,7 @@ const PaginationBar = ({
             icon={<ChevronDoubleRightRegular />}
             onClick={() => onPageChange(offset + fastForwardPage * pageSize, pageSize)}
           />
-        </Tooltip>{' '}
+        </FuiTooltip>{' '}
         {!isMobile && <Divider vertical />}
       </div>
       {/* divider between nav and page size on mobile */}
@@ -326,6 +325,7 @@ const PaginationBar = ({
         {isMobile ? (
           <FuiMobileDropdown
             className={styles.listbox}
+            drawerTitle={pageSizeLabel}
             onChange={(val) => {
               if (val && !Array.isArray(val)) {
                 onPageChange(offset, Number(val));
@@ -500,6 +500,11 @@ const Table = <T extends Record<string, unknown>>({
                         ? sortDir === 'asc'
                           ? 'ascending'
                           : 'descending'
+                        : undefined
+                    }
+                    sortIcon={
+                      col.sortable && sortField !== col.field
+                        ? { children: <ArrowSortRegular fontSize={12} /> }
                         : undefined
                     }
                     style={{ ...getCellStyle(col), ...col.headerStyle, textAlign: col.align }}

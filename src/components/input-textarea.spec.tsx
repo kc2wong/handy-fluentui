@@ -21,8 +21,9 @@ vi.mock('@fluentui/react-components', () => {
         onChange={(e) => props.onChange?.(e, { value: e.target.value })}
         onFocus={props.onFocus}
         placeholder={props.placeholder}
+        rows={props.rows}
         style={props.style}
-        value={props.value} 
+        value={props.value}
       />
     ),
     Label: ({ children, htmlFor, required }: any) => (
@@ -104,6 +105,18 @@ describe('InputTextArea', () => {
 
     fireEvent.click(eraser);
     expect(handleChange).toHaveBeenCalledWith(null);
+  });
+
+  it('defaults rows to 4 when not provided', () => {
+    render(<FuiInputTextArea label="Test" onChange={() => {}} value={null} />);
+    const textarea = screen.getByTestId('fluent-textarea');
+    expect(textarea).toHaveAttribute('rows', '4');
+  });
+
+  it('respects an explicit rows value', () => {
+    render(<FuiInputTextArea label="Test" onChange={() => {}} rows={8} value={null} />);
+    const textarea = screen.getByTestId('fluent-textarea');
+    expect(textarea).toHaveAttribute('rows', '8');
   });
 
   it('supports className and style', () => {

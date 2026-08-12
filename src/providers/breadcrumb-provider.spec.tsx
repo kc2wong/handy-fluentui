@@ -1,10 +1,10 @@
 import { render, screen, act } from '@testing-library/react';
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
+
+import { useBreadcrumb } from '@hook/use-breadcrumb';
+
 import { BreadcrumbProvider } from './breadcrumb-provider';
 import { HandyFluentUiProvider } from './handy-fluent-ui-provider';
-import { useBreadcrumb } from '@hook/use-breadcrumb';
-import { FuiBreadcrumbContext } from '@context/breadcrumb-context';
 
 const BreadcrumbConsumer = () => {
   const breadcrumb = useBreadcrumb();
@@ -14,9 +14,17 @@ const BreadcrumbConsumer = () => {
       <div data-testid="item-count">{breadcrumb.items.length}</div>
       <div data-testid="items">{breadcrumb.items.map((i: any) => i.label()).join(', ')}</div>
       <div data-testid="tags">{breadcrumb.items.map((i: any) => i.tag).join(', ')}</div>
-      <button onClick={() => breadcrumb.start({ label: () => 'Home', tag: 'home', action: () => {} })}>Start</button>
-      <button onClick={() => breadcrumb.append({ label: () => 'Page 1', action: () => {} })}>Append</button>
+      <div data-testid="is-collapsed">{String(breadcrumb.isCollapsed)}</div>
+      <button
+        onClick={() => breadcrumb.start({ label: () => 'Home', tag: 'home', action: () => {} })}
+      >
+        Start
+      </button>
+      <button onClick={() => breadcrumb.append({ label: () => 'Page 1', action: () => {} })}>
+        Append
+      </button>
       <button onClick={() => breadcrumb.popTill()}>Pop One</button>
+      <button onClick={() => breadcrumb.toggleCollapsed()}>Toggle Collapsed</button>
     </div>
   );
 };
@@ -28,7 +36,7 @@ describe('Breadcrumb System (Provider & Hook)', () => {
         <BreadcrumbProvider>
           <BreadcrumbConsumer />
         </BreadcrumbProvider>
-      </HandyFluentUiProvider>
+      </HandyFluentUiProvider>,
     );
     expect(screen.getByTestId('item-count')).toHaveTextContent('0');
   });
@@ -39,7 +47,7 @@ describe('Breadcrumb System (Provider & Hook)', () => {
         <BreadcrumbProvider>
           <BreadcrumbConsumer />
         </BreadcrumbProvider>
-      </HandyFluentUiProvider>
+      </HandyFluentUiProvider>,
     );
 
     act(() => {
@@ -54,7 +62,7 @@ describe('Breadcrumb System (Provider & Hook)', () => {
         <BreadcrumbProvider>
           <BreadcrumbConsumer />
         </BreadcrumbProvider>
-      </HandyFluentUiProvider>
+      </HandyFluentUiProvider>,
     );
 
     act(() => {
@@ -93,13 +101,21 @@ describe('Breadcrumb System (Provider & Hook)', () => {
         <BreadcrumbProvider>
           <CustomConsumer />
         </BreadcrumbProvider>
-      </HandyFluentUiProvider>
+      </HandyFluentUiProvider>,
     );
 
-    act(() => { screen.getByText('Start').click(); });
-    act(() => { screen.getByText('A1').click(); });
-    act(() => { screen.getByText('A2').click(); });
-    act(() => { screen.getByText('A3').click(); });
+    act(() => {
+      screen.getByText('Start').click();
+    });
+    act(() => {
+      screen.getByText('A1').click();
+    });
+    act(() => {
+      screen.getByText('A2').click();
+    });
+    act(() => {
+      screen.getByText('A3').click();
+    });
 
     expect(screen.getByTestId('count')).toHaveTextContent('4');
 
@@ -126,7 +142,7 @@ describe('Breadcrumb System (Provider & Hook)', () => {
           <CaptureItems />
           <BreadcrumbConsumer />
         </BreadcrumbProvider>
-      </HandyFluentUiProvider>
+      </HandyFluentUiProvider>,
     );
 
     act(() => {
@@ -148,7 +164,31 @@ describe('Breadcrumb System (Provider & Hook)', () => {
 
   it('throws error when hook used outside provider', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    expect(() => render(<BreadcrumbConsumer />)).toThrow('useBreadcrumb must be used within FuiBreadcrumbContextProvider');
+    expect(() => render(<BreadcrumbConsumer />)).toThrow(
+      'useBreadcrumb must be used within FuiBreadcrumbContextProvider',
+    );
     consoleSpy.mockRestore();
+  });
+
+  it('defaults isCollapsed to false and toggles it', () => {
+    render(
+      <HandyFluentUiProvider>
+        <BreadcrumbProvider>
+          <BreadcrumbConsumer />
+        </BreadcrumbProvider>
+      </HandyFluentUiProvider>,
+    );
+
+    expect(screen.getByTestId('is-collapsed')).toHaveTextContent('false');
+
+    act(() => {
+      screen.getByText('Toggle Collapsed').click();
+    });
+    expect(screen.getByTestId('is-collapsed')).toHaveTextContent('true');
+
+    act(() => {
+      screen.getByText('Toggle Collapsed').click();
+    });
+    expect(screen.getByTestId('is-collapsed')).toHaveTextContent('false');
   });
 });

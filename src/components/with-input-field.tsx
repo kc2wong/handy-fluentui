@@ -57,10 +57,10 @@ const useStyles = makeStyles({
     width: '100% !important',
     minHeight: 'auto',
   },
-  labelSmall: { width: '10%' },
-  labelMedium: { width: '20%' },
-  labelLarge: { width: '30%' },
-  labelNone: { width: 'auto' },
+  labelQuarter: { width: '25%' },
+  labelThird: { width: '33.3333%' },
+  labelHalf: { width: '50%' },
+  labelAuto: { width: 'auto' },
   labelComponent: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -131,8 +131,8 @@ type FieldLayoutProps = {
    * - 'vertical' (default): Label above the input.
    * - 'horizontal': Label to the left of the input (stacks on mobile).
    */
-  (| { direction?: 'vertical'; labelWidth?: never }
-    | { direction: 'horizontal'; labelWidth?: 'small' | 'medium' | 'large' | 'none' }
+  (| { layout?: 'vertical'; labelWidth?: never }
+    | { layout: 'horizontal'; labelWidth?: 'quarter' | 'third' | 'half' | 'auto' }
   );
 
 /**
@@ -153,8 +153,8 @@ const withInputField = <P extends { id?: string }>(
       errorMessage,
       infoMessage,
       noMessage = false,
-      direction = 'vertical',
-      labelWidth = 'medium',
+      layout = 'vertical',
+      labelWidth = 'quarter',
       additionalMessage,
       clearable = true,
       onClear,
@@ -164,15 +164,15 @@ const withInputField = <P extends { id?: string }>(
     const styles = useStyles();
     const isMobile = useIsMobile();
     const inputId = useId('input-field');
-    const isHorizontal = direction === 'horizontal';
+    const isHorizontal = layout === 'horizontal';
 
     const labelClasses = mergeClasses(
       isHorizontal && styles.labelHorizontal,
       isHorizontal && isMobile && styles.labelHorizontalColumn,
-      isHorizontal && labelWidth === 'small' && styles.labelSmall,
-      isHorizontal && labelWidth === 'medium' && styles.labelMedium,
-      isHorizontal && labelWidth === 'large' && styles.labelLarge,
-      isHorizontal && labelWidth === 'none' && styles.labelNone,
+      isHorizontal && labelWidth === 'quarter' && styles.labelQuarter,
+      isHorizontal && labelWidth === 'third' && styles.labelThird,
+      isHorizontal && labelWidth === 'half' && styles.labelHalf,
+      isHorizontal && labelWidth === 'auto' && styles.labelAuto,
     );
 
     const hasLabel = label !== null;

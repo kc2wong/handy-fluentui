@@ -7,17 +7,20 @@ import {
   mergeClasses,
   tokens,
 } from '@fluentui/react-components';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { useBreadcrumb } from '@hook/use-breadcrumb';
 import { useDialog } from '@hook/use-dialog';
 import { useSpinner } from '@hook/use-spinner';
 import { useTheme } from '@hook/use-theme';
 import { useToast } from '@hook/use-toast';
 
+import { FuiBreadcrumb } from './components/fui-breadcrumb';
 import { FuiButtonPanel } from './components/fui-button-panel';
 import { FuiImageCarousel } from './components/fui-image-carousell';
 import { FuiTab, FuiTabList } from './components/fui-tab';
 import { FuiColumn, FuiTable } from './components/fui-table';
+import { FuiTooltip } from './components/fui-tooltip';
 import { FuiInputCheckbox } from './components/input-checkbox';
 import { FuiInputDate } from './components/input-date';
 import { FuiInputDropdown, InputDropdownOption } from './components/input-dropdown';
@@ -36,6 +39,7 @@ import { type Lang, useMobileSim } from './main';
 
 const LABELS = {
   en: {
+    main: 'Main',
     pageTitle: 'Employee Profile',
     // Settings
     theme: 'Theme',
@@ -104,12 +108,15 @@ const LABELS = {
     languages: ['English', '繁體中文'] as string[],
     // Buttons
     cancel: 'Cancel',
+    cancelHint: 'Discard your changes',
     save: 'Save',
+    saveHint: 'Save your changes',
     confirmCancelTitle: 'Confirm Cancel',
     confirmCancelMsg: 'Are you sure you want to discard your changes?',
     yes: 'Yes',
   },
   'zh-TW': {
+    main: '主目錄',
     pageTitle: '員工個人資料',
     // Settings
     theme: '主題',
@@ -179,7 +186,9 @@ const LABELS = {
     languages: ['English', '繁體中文'] as string[],
     // Buttons
     cancel: '取消',
+    cancelHint: '捨棄所做的更改',
     save: '儲存',
+    saveHint: '儲存所做的更改',
     confirmCancelTitle: '確認取消',
     confirmCancelMsg: '您確定要捨棄所做的更改嗎？',
     yes: '確定',
@@ -292,10 +301,27 @@ const App = ({ lang, onToggleLang }: AppProps) => {
   const spinner = useSpinner();
   const dialog = useDialog();
   const toast = useToast();
+  const breadcrumb = useBreadcrumb();
 
   const t = LABELS[lang];
 
   const [selectedTab, setSelectedTab] = useState('personal');
+
+  useEffect(() => {
+    const tabLabels: Record<string, string> = {
+      personal: t.personal,
+      employment: t.employment,
+      workRecords: t.workRecords,
+    };
+
+    breadcrumb.start({ label: () => t.main, tag: 'main' });
+    breadcrumb.append({ label: () => t.pageTitle, tag: 'root' });
+    breadcrumb.append({
+      label: () => tabLabels[selectedTab] ?? selectedTab,
+      tag: selectedTab,
+    });
+    // breadcrumb's start/append are recreated every render — only re-sync on lang/tab changes.
+  }, [lang, selectedTab]);
 
   const [formData, setFormData] = useState({
     fullName: null as string | null,
@@ -364,6 +390,8 @@ const App = ({ lang, onToggleLang }: AppProps) => {
 
   return (
     <div className={mergeClasses(styles.page, forceMobile && styles.pageMobile)}>
+      <FuiBreadcrumb />
+
       <h2 className={styles.pageTitle}>{t.pageTitle}</h2>
 
       {/* Settings bar */}
@@ -398,7 +426,11 @@ const App = ({ lang, onToggleLang }: AppProps) => {
           <div className={styles.section}>
             <FuiImageCarousel
               images={profileImages}
-              langLabel={{ autoplay: t.carouselAutoplay, next: t.carouselNext, previous: t.carouselPrev }}
+              langLabel={{
+                autoplay: t.carouselAutoplay,
+                next: t.carouselNext,
+                previous: t.carouselPrev,
+              }}
             />
 
             <FuiInputText
@@ -419,9 +451,9 @@ const App = ({ lang, onToggleLang }: AppProps) => {
             />
 
             <FuiInputRadio
-              direction="horizontal"
               label={t.gender}
-              labelWidth="medium"
+              labelWidth="quarter"
+              layout="horizontal"
               onChange={(data) => setFormData((prev) => ({ ...prev, gender: data.value }))}
               required
               value={formData.gender}
@@ -710,30 +742,36 @@ const App = ({ lang, onToggleLang }: AppProps) => {
 
       {/* Action buttons */}
       <FuiButtonPanel alignItems="right">
-        <Button
-          appearance="secondary"
-          onClick={() =>
-            dialog.openDialog({
-              content: t.confirmCancelMsg,
-              primaryButton: { action: () => {}, label: t.yes },
-              title: t.confirmCancelTitle,
-            })
-          }
-        >
-          {t.cancel}
-        </Button>
-        <Button
-          appearance="primary"
-          onClick={() => {
-            spinner.show();
-            setTimeout(() => {
-              spinner.hide();
-              toast.success(lang === 'en' ? 'Profile saved successfully!' : '個人資料已成功儲存！');
-            }, 1500);
-          }}
-        >
-          {t.save}
-        </Button>
+        <FuiTooltip text={t.cancelHint}>
+          <Button
+            appearance="secondary"
+            onClick={() =>
+              dialog.openDialog({
+                content: t.confirmCancelMsg,
+                primaryButton: { action: () => {}, label: t.yes },
+                title: t.confirmCancelTitle,
+              })
+            }
+          >
+            {t.cancel}
+          </Button>
+        </FuiTooltip>
+        <FuiTooltip text={t.saveHint}>
+          <Button
+            appearance="primary"
+            onClick={() => {
+              spinner.show();
+              setTimeout(() => {
+                spinner.hide();
+                toast.success(
+                  lang === 'en' ? 'Profile saved successfully!' : '個人資料已成功儲存！',
+                );
+              }, 1500);
+            }}
+          >
+            {t.save}
+          </Button>
+        </FuiTooltip>
       </FuiButtonPanel>
     </div>
   );

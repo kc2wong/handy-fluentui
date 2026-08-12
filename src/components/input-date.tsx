@@ -1,5 +1,6 @@
 import { Calendar } from '@fluentui/react-calendar-compat';
 import {
+  Button,
   Input,
   OverlayDrawer,
   DrawerBody,
@@ -9,7 +10,7 @@ import {
   tokens,
 } from '@fluentui/react-components';
 import { DatePicker, DatePickerProps } from '@fluentui/react-datepicker-compat';
-import { CalendarRegular } from '@fluentui/react-icons';
+import { CalendarRegular, DismissRegular } from '@fluentui/react-icons';
 import React, { useState } from 'react';
 
 import { useIsMobile } from '@hook/use-mobile';
@@ -23,11 +24,15 @@ const useStyles = makeStyles({
   },
   drawerHeader: {
     paddingBottom: tokens.spacingVerticalM,
+    paddingLeft: tokens.spacingHorizontalXXL,
+    paddingRight: tokens.spacingHorizontalXXL,
   },
   calendarWrapper: {
     display: 'flex',
     justifyContent: 'center',
     padding: tokens.spacingVerticalM,
+    paddingLeft: tokens.spacingHorizontalXXL,
+    paddingRight: tokens.spacingHorizontalXXL,
   },
 });
 
@@ -151,7 +156,18 @@ const MobileDate: React.FC<
       >
         {drawerTitle && (
           <DrawerHeader className={styles.drawerHeader}>
-            <DrawerHeaderTitle>{drawerTitle}</DrawerHeaderTitle>
+            <DrawerHeaderTitle
+              action={
+                <Button
+                  appearance="subtle"
+                  aria-label="Close"
+                  icon={<DismissRegular />}
+                  onClick={() => setIsDrawerOpen(false)}
+                />
+              }
+            >
+              {drawerTitle}
+            </DrawerHeaderTitle>
           </DrawerHeader>
         )}
         <DrawerBody>

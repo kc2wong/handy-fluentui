@@ -34,14 +34,12 @@ vi.mock('@fluentui/react-components', () => {
       <tr className={className}>
         {typeof children === 'function'
           ? columns?.map((col: any) => (
-              <React.Fragment key={col.columnId}>
-                {children(col)}
-              </React.Fragment>
+              <React.Fragment key={col.columnId}>{children(col)}</React.Fragment>
             ))
           : children}
       </tr>
     ),
-    DataGridHeaderCell: ({ children, onClick, sortDirection, style, className }: any) => (
+    DataGridHeaderCell: ({ children, onClick, sortDirection, sortIcon, style, className }: any) => (
       <th className={className} style={style}>
         {onClick ? (
           <button
@@ -50,6 +48,7 @@ vi.mock('@fluentui/react-components', () => {
             onClick={onClick}
           >
             {children}
+            {sortIcon && <span data-testid="sort-icon">{sortIcon.children}</span>}
           </button>
         ) : (
           children
@@ -69,7 +68,9 @@ vi.mock('@fluentui/react-components', () => {
         {children}
       </td>
     ),
-    Body1Strong: ({ children, className }: any) => <strong className={className}>{children}</strong>,
+    Body1Strong: ({ children, className }: any) => (
+      <strong className={className}>{children}</strong>
+    ),
     Body1: ({ children }: any) => <span>{children}</span>,
     Button: ({ onClick, disabled, icon, 'aria-label': ariaLabel }: any) => (
       <button aria-label={ariaLabel} disabled={disabled} onClick={onClick}>
@@ -126,6 +127,7 @@ vi.mock('@fluentui/react-components', () => {
 });
 
 vi.mock('@fluentui/react-icons', () => ({
+  ArrowSortRegular: () => <span>Sort</span>,
   ChevronDoubleLeftRegular: () => <span>DoubleLeft</span>,
   ChevronDoubleRightRegular: () => <span>DoubleRight</span>,
   ChevronLeftRegular: () => <span>Left</span>,
@@ -173,16 +175,12 @@ describe('FuiTable', () => {
     vi.clearAllMocks();
     mockIsMobile.mockReturnValue(false);
     mockContextValue.selectedLanguage = 'en';
-    mockContextValue.supportedLanguage = [
-      { iso: 'en', name: 'English' },
-    ];
+    mockContextValue.supportedLanguage = [{ iso: 'en', name: 'English' }];
   });
 
   const renderWithContext = (ui: React.ReactElement, contextValue = mockContextValue) => {
     return render(
-      <HandyFluentUiContext.Provider value={contextValue}>
-        {ui}
-      </HandyFluentUiContext.Provider>
+      <HandyFluentUiContext.Provider value={contextValue}>{ui}</HandyFluentUiContext.Provider>,
     );
   };
 
@@ -191,7 +189,7 @@ describe('FuiTable', () => {
       <FuiTable data={sampleData}>
         <FuiColumn field="id" header="ID" />
         <FuiColumn field="name" header="Name" />
-      </FuiTable>
+      </FuiTable>,
     );
 
     expect(screen.getByText('ID')).toBeInTheDocument();
@@ -206,7 +204,7 @@ describe('FuiTable', () => {
     renderWithContext(
       <FuiTable data={sampleData}>
         <FuiColumn field="nested.val" header="Nested" />
-      </FuiTable>
+      </FuiTable>,
     );
 
     expect(screen.getByText('A')).toBeInTheDocument();
@@ -216,12 +214,8 @@ describe('FuiTable', () => {
   it('uses formatter for cell rendering', () => {
     renderWithContext(
       <FuiTable data={sampleData}>
-        <FuiColumn 
-          field="name" 
-          formatter={(val) => `User: ${val}`} 
-          header="Name" 
-        />
-      </FuiTable>
+        <FuiColumn field="name" formatter={(val) => `User: ${val}`} header="Name" />
+      </FuiTable>,
     );
 
     expect(screen.getByText('User: Alice')).toBeInTheDocument();
@@ -231,12 +225,8 @@ describe('FuiTable', () => {
   it('uses builder for cell rendering', () => {
     renderWithContext(
       <FuiTable data={sampleData}>
-        <FuiColumn 
-          builder={(val) => <button>{`Edit ${val}`}</button>} 
-          field="id" 
-          header="Action" 
-        />
-      </FuiTable>
+        <FuiColumn builder={(val) => <button>{`Edit ${val}`}</button>} field="id" header="Action" />
+      </FuiTable>,
     );
 
     expect(screen.getByText('Edit 1')).toBeInTheDocument();
@@ -248,11 +238,11 @@ describe('FuiTable', () => {
     renderWithContext(
       <FuiTable data={sampleData} onPageOrSort={onPageOrSort}>
         <FuiColumn field="name" header="Name" sortable />
-      </FuiTable>
+      </FuiTable>,
     );
 
     const sortButton = screen.getByLabelText('Sort by Name');
-    
+
     // First click -> asc
     fireEvent.click(sortButton);
     expect(onPageOrSort).toHaveBeenCalledWith(undefined, { field: 'name', direction: 'asc' });
@@ -268,13 +258,49 @@ describe('FuiTable', () => {
     renderWithContext(
       <FuiTable data={sampleData}>
         <FuiColumn field="name" header="Name" sortable />
-      </FuiTable>
+      </FuiTable>,
     );
 
     const sortButton = screen.getByLabelText('Sort by Name');
     fireEvent.click(sortButton);
-    
-    expect(mockLogger.warn).toHaveBeenCalledWith('Sorting is not performed because onSort handler is not provided');
+
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      'Sorting is not performed because onSort handler is not provided',
+    );
+  });
+
+  it('shows an up-down sort icon for a sortable column that is not currently sorted', () => {
+    renderWithContext(
+      <FuiTable data={sampleData}>
+        <FuiColumn field="name" header="Name" sortable />
+      </FuiTable>,
+    );
+
+    expect(screen.getByTestId('sort-icon')).toHaveTextContent('Sort');
+  });
+
+  it('does not show the up-down sort icon for a non-sortable column', () => {
+    renderWithContext(
+      <FuiTable data={sampleData}>
+        <FuiColumn field="name" header="Name" />
+      </FuiTable>,
+    );
+
+    expect(screen.queryByTestId('sort-icon')).not.toBeInTheDocument();
+  });
+
+  it('hides the up-down sort icon once the column becomes actively sorted', () => {
+    renderWithContext(
+      <FuiTable data={sampleData} onPageOrSort={vi.fn()}>
+        <FuiColumn field="name" header="Name" sortable />
+      </FuiTable>,
+    );
+
+    expect(screen.getByTestId('sort-icon')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Sort by Name'));
+
+    expect(screen.queryByTestId('sort-icon')).not.toBeInTheDocument();
   });
 
   it('renders pagination and handles page changes', () => {
@@ -289,7 +315,7 @@ describe('FuiTable', () => {
     renderWithContext(
       <FuiTable data={sampleData} onPageOrSort={onPageOrSort} pagination={pagination}>
         <FuiColumn field="name" header="Name" />
-      </FuiTable>
+      </FuiTable>,
     );
 
     expect(screen.getByText('1 to 2 of 20')).toBeInTheDocument();
@@ -312,7 +338,7 @@ describe('FuiTable', () => {
     renderWithContext(
       <FuiTable data={sampleData} onPageOrSort={onPageOrSort} pagination={pagination}>
         <FuiColumn field="name" header="Name" />
-      </FuiTable>
+      </FuiTable>,
     );
 
     const option10 = screen.getByTestId('option-10');
@@ -334,7 +360,7 @@ describe('FuiTable', () => {
     renderWithContext(
       <FuiTable data={sampleData} onPageOrSort={onPageOrSort} pagination={pagination}>
         <FuiColumn field="name" header="Name" />
-      </FuiTable>
+      </FuiTable>,
     );
 
     const mobileDropdown = screen.getByTestId('mobile-dropdown');
@@ -390,7 +416,6 @@ describe('FuiTable', () => {
     expect(screen.getByText('Rows :')).toBeInTheDocument();
   });
 
-
   it('renders filler rows when pagination is enabled', () => {
     const pagination = {
       offset: 0,
@@ -402,7 +427,7 @@ describe('FuiTable', () => {
     const { container } = renderWithContext(
       <FuiTable data={sampleData} pagination={pagination}>
         <FuiColumn field="name" header="Name" />
-      </FuiTable>
+      </FuiTable>,
     );
 
     // sampleData has 2 items. filler rows = 5 - 2 = 3.
@@ -423,7 +448,7 @@ describe('FuiTable', () => {
     const { container } = renderWithContext(
       <FuiTable data={sampleData} pagination={pagination}>
         <FuiColumn field="name" header="Name" />
-      </FuiTable>
+      </FuiTable>,
     );
 
     // sampleData has 2 items. filler rows = 10 - 2 = 8.
@@ -443,7 +468,7 @@ describe('FuiTable', () => {
     const { container } = renderWithContext(
       <FuiTable data={[]} pagination={pagination}>
         <FuiColumn field="name" header="Name" />
-      </FuiTable>
+      </FuiTable>,
     );
 
     // 1 header + 5 filler rows = 6 rows.
@@ -483,21 +508,21 @@ describe('FuiTable', () => {
     const { container } = renderWithContext(
       <FuiTable data={sampleData} pagination={pagination}>
         <FuiColumn field="name" header="Name" />
-      </FuiTable>
+      </FuiTable>,
     );
 
     const paginationBar = container.querySelector('.paginationBar');
     const tableWrapper = container.querySelector('.scrollContainer');
-    
+
     expect(paginationBar).toBeInTheDocument();
     expect(tableWrapper).toBeInTheDocument();
-    
+
     // In React 18 with Fragments, they might be direct children of the container
     // if the root of the component is a fragment.
     const children = Array.from(paginationBar?.parentElement?.childNodes || []);
     const paginationIndex = children.indexOf(paginationBar as any);
     const tableIndex = children.indexOf(tableWrapper as any);
-    
+
     expect(paginationIndex).toBeLessThan(tableIndex);
   });
 
@@ -506,7 +531,7 @@ describe('FuiTable', () => {
       <FuiTable data={sampleData}>
         <FuiColumn align="right" field="id" header="ID" />
         <FuiColumn align="center" field="name" header="Name" />
-      </FuiTable>
+      </FuiTable>,
     );
 
     const headers = screen.getAllByRole('columnheader');
@@ -523,8 +548,10 @@ describe('FuiTable', () => {
   });
 
   it('renders tooltips for pagination buttons', () => {
+    // offset is neither the first nor the last page, so prev/next are both enabled — FuiTooltip
+    // skips wrapping a disabled button, and prev buttons are disabled at offset 0.
     const pagination = {
-      offset: 0,
+      offset: 10,
       pageSize: 5,
       totalRecord: 20,
       pageSizeOption: [5, 10, 20],
@@ -533,7 +560,7 @@ describe('FuiTable', () => {
     renderWithContext(
       <FuiTable data={sampleData} pagination={pagination}>
         <FuiColumn field="name" header="Name" />
-      </FuiTable>
+      </FuiTable>,
     );
 
     const tooltips = screen.getAllByTestId('tooltip-wrapper');
@@ -553,7 +580,7 @@ describe('FuiTable', () => {
           headerEllipsis
           headerStyle={{ fontWeight: 'bold' }}
         />
-      </FuiTable>
+      </FuiTable>,
     );
 
     const headerText = screen.getByText('Long Header Name');
@@ -570,7 +597,7 @@ describe('FuiTable', () => {
     const { container } = renderWithContext(
       <FuiTable data={sampleData}>
         <FuiColumn field="id" header="ID" />
-      </FuiTable>
+      </FuiTable>,
     );
 
     const headerRow = container.querySelector('thead tr');
@@ -590,7 +617,7 @@ describe('FuiTable', () => {
       <FuiTable data={sampleData}>
         <FuiColumn field="id" header="ID" style={{ width: '20%' }} />
         <FuiColumn field="name" header="Name" style={{ width: '80%' }} />
-      </FuiTable>
+      </FuiTable>,
     );
 
     // Header cells
@@ -604,7 +631,8 @@ describe('FuiTable', () => {
     expect(headerCells[1]).toHaveStyle({ flex: '0 0 80%' });
 
     // Data cells for first row
-    const firstRowCells = container.querySelectorAll<HTMLTableCellElement>('tbody tr:first-child td');
+    const firstRowCells =
+      container.querySelectorAll<HTMLTableCellElement>('tbody tr:first-child td');
     firstRowCells.forEach((td) => {
       expect(td.style.boxSizing).toBe('border-box');
       expect(td.style.minWidth).toBe('0px');
@@ -619,7 +647,7 @@ describe('FuiTable', () => {
       <FuiTable data={sampleData}>
         <FuiColumn field="id" header="ID" />
         <FuiColumn field="name" header="Name" style={{ color: 'rgb(255, 0, 0)' }} />
-      </FuiTable>
+      </FuiTable>,
     );
 
     const headerCells = container.querySelectorAll('th');
@@ -633,7 +661,7 @@ describe('FuiTable', () => {
     const { container } = renderWithContext(
       <FuiTable data={sampleData}>
         <FuiColumn field="id" header="ID" style={{ color: 'rgb(0, 0, 255)', width: '30%' }} />
-      </FuiTable>
+      </FuiTable>,
     );
 
     const headerCell = container.querySelector('th')!;

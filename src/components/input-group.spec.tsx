@@ -51,10 +51,10 @@ vi.mock('@fluentui/react-components', () => ({
     rootVertical: 'root-vertical',
     rootHorizontal: 'root-horizontal',
     labelHorizontal: 'label-horizontal',
-    labelSmall: 'label-small',
-    labelMedium: 'label-medium',
-    labelLarge: 'label-large',
-    labelNone: 'label-none',
+    labelQuarter: 'label-quarter',
+    labelThird: 'label-third',
+    labelHalf: 'label-half',
+    labelAuto: 'label-auto',
     labelContainer: 'label-container',
     eraserIcon: 'eraser-icon',
     fieldGroup: 'field-group',
@@ -177,9 +177,9 @@ describe('InputGroup', () => {
     it('renders group label to the left of items in horizontal layout', () => {
       const { container } = render(
         <FuiInputGroup
-          direction="horizontal"
           items={[{ element: <FuiInputText onChange={() => {}} value={null} /> }]}
           label="Period"
+          layout="horizontal"
         />,
       );
       expect(container.firstChild).toHaveClass('root-horizontal');
@@ -189,15 +189,15 @@ describe('InputGroup', () => {
     it('applies label width class to group label in horizontal mode', () => {
       render(
         <FuiInputGroup
-          direction="horizontal"
           items={[{ element: <FuiInputText onChange={() => {}} value={null} /> }]}
           label="Period"
-          labelWidth="large"
+          labelWidth="half"
+          layout="horizontal"
         />,
       );
       const labelContainer = screen.getByTestId('label').parentElement;
       expect(labelContainer).toHaveClass('label-horizontal');
-      expect(labelContainer).toHaveClass('label-large');
+      expect(labelContainer).toHaveClass('label-half');
     });
 
     it('renders InfoLabel for the group when hint is provided', () => {
@@ -228,13 +228,13 @@ describe('InputGroup', () => {
   });
 
   describe('mobile layout', () => {
-    it('forces vertical layout on mobile even if direction is horizontal', () => {
+    it('forces vertical layout on mobile even if layout is horizontal', () => {
       mockIsMobile.mockReturnValue(true);
       const { container } = render(
         <FuiInputGroup
-          direction="horizontal"
           items={[{ element: <FuiInputText onChange={() => {}} value={null} /> }]}
           label="Mobile Group"
+          layout="horizontal"
         />,
       );
       expect(container.firstChild).toHaveClass('root-vertical');
