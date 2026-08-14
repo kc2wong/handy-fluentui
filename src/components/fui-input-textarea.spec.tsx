@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { vi, describe, it, expect } from 'vitest';
 
-import { FuiInputTextArea } from './input-textarea';
+import { FuiInputTextArea } from './fui-input-textarea';
 
 vi.mock('@hook/use-mobile', () => ({
   useIsMobile: () => false,

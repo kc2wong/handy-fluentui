@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-import { FuiInputTime } from './input-time';
+import { FuiInputTime } from './fui-input-time';
 
 const mockIsMobile = vi.fn();
 vi.mock('@hook/use-mobile', () => ({
@@ -16,6 +16,7 @@ vi.mock('@fluentui/react-components', () => {
       <div data-testid="fluent-input-wrapper">
         {props.contentBefore && <div data-testid="content-before">{props.contentBefore}</div>}
         <input
+          ref={props.input?.ref}
           data-testid="fluent-input"
           id={props.id}
           onBlur={props.onBlur}
@@ -23,7 +24,6 @@ vi.mock('@fluentui/react-components', () => {
           onFocus={props.onFocus}
           onKeyDown={props.onKeyDown}
           readOnly={props.readOnly}
-          ref={props.input?.ref}
           style={props.input?.style}
           value={props.value}
         />

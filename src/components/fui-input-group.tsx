@@ -25,18 +25,18 @@ type GroupableInputProps<V extends string | number | Date> = FieldLayoutProps & 
   onChange: (value: V | null) => void;
 };
 
-type InputGroupItem<T extends GroupableInputProps<string | number | Date>> = {
+type FuiInputGroupItem<T extends GroupableInputProps<string | number | Date>> = {
   element: React.ReactElement<T>;
   /** Flex-grow factor relative to siblings. Defaults to 1. */
   weight?: number;
 };
 
-type InputGroupProps<T extends GroupableInputProps<string | number | Date>> = Omit<
+type FuiInputGroupProps<T extends GroupableInputProps<string | number | Date>> = Omit<
   FieldLayoutProps,
   'label'
 > & {
   label: string;
-  items: InputGroupItem<T>[];
+  items: FuiInputGroupItem<T>[];
   /** Custom CSS class for the group container. */
   className?: string;
   /** Custom CSS styles for the group container. */
@@ -55,7 +55,10 @@ const RawInputGroup: React.FC<RawInputGroupProps> = ({ items, className, style }
   const styles = useStyles();
 
   return (
-    <div className={`${isMobile ? styles.groupColumn : styles.groupRow} ${className ?? ''}`} style={style}>
+    <div
+      className={`${isMobile ? styles.groupColumn : styles.groupRow} ${className ?? ''}`}
+      style={style}
+    >
       {items.map(({ element, weight = 1 }, index) => {
         const { label, placeholder } = element.props;
         const finalPlaceHolder = placeholder ?? label;
@@ -74,14 +77,13 @@ const RawInputGroup: React.FC<RawInputGroupProps> = ({ items, className, style }
       })}
     </div>
   );
-
 };
 
 const EnhancedInputGroup = withInputField(RawInputGroup);
 
 /** Groups multiple inputs under one shared label with weighted distribution. Items stack vertically on mobile regardless of weight. Each item's own label is hidden; the group label takes over. */
-const InputGroup = <T extends GroupableInputProps<string | number | Date>>(
-  props: InputGroupProps<T>,
+const FuiInputGroup = <T extends GroupableInputProps<string | number | Date>>(
+  props: FuiInputGroupProps<T>
 ): React.ReactElement => {
   const isMobile = useIsMobile();
   const { items, className, style } = props;
@@ -107,6 +109,5 @@ const InputGroup = <T extends GroupableInputProps<string | number | Date>>(
   );
 };
 
-export { InputGroup as FuiInputGroup };
-/** Props for FuiInputGroup. */
-export type { InputGroupProps };
+export { FuiInputGroup };
+export type { FuiInputGroupProps };

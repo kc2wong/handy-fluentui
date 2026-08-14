@@ -1,8 +1,6 @@
 import {
   Tab,
   TabList,
-  TabListProps,
-  TabProps,
   makeStyles,
   mergeClasses,
   tokens,
@@ -57,39 +55,39 @@ const useStyles = makeStyles({
 /** Accepted tab identifier type. */
 type FuiTabValue = string | number;
 
-/** Typed wrapper around SelectTabData that narrows value to T. */
-type FuiSelectTabData<T extends FuiTabValue> = Omit<SelectTabData, 'value'> & {
-  value: T;
-};
-
 /** Config for a single tab. value defaults to name when omitted. */
-type FuiTabProps<T extends FuiTabValue = FuiTabValue> = Omit<TabProps, 'value'> & {
+type FuiTabProps<T extends FuiTabValue = FuiTabValue> = {
   name: string;
   value?: T;
+  icon?: React.ReactElement;
+  disabled?: boolean;
   children?: React.ReactNode;
 };
 
 const TAB_MARKER = Symbol.for('FuiTab');
 
 /** Config-carrier for a single tab. Must be a direct child of FuiTabList. Renders nothing itself. */
-const FuiTab = Object.assign(
-  <T extends FuiTabValue>(_props: FuiTabProps<T>) => null,
-  { _marker: TAB_MARKER },
-);
+const FuiTab = Object.assign(<T extends FuiTabValue>(_props: FuiTabProps<T>) => null, {
+  _marker: TAB_MARKER,
+});
+
+/** Data passed to onTabSelect, narrowed to T. */
+type FuiSelectTabData<T extends FuiTabValue> = { value: T };
 
 /** Props for FuiTabList. selectedValue and onTabSelect are typed to T. */
-type FuiTabListProps<T extends FuiTabValue = FuiTabValue> = Omit<
-  TabListProps,
-  'selectedValue' | 'onTabSelect'
-> & {
+type FuiTabListProps<T extends FuiTabValue = FuiTabValue> = {
   selectedValue?: T;
   onTabSelect?: (data: FuiSelectTabData<T>) => void;
+  /** Renders tabs down the side with content to the right. Forced to false on mobile. */
+  vertical?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
   children: React.ReactNode;
 };
 
 /** Tab list with an inline content panel. Forces horizontal layout on mobile regardless of the vertical prop. */
 const FuiTabList = <T extends FuiTabValue>(props: FuiTabListProps<T>) => {
-  const { children, vertical, selectedValue, onTabSelect, ...rest } = props;
+  const { children, vertical, selectedValue, onTabSelect, className, style } = props;
   const isMobile = useIsMobile();
   const styles = useStyles();
 
@@ -99,7 +97,7 @@ const FuiTabList = <T extends FuiTabValue>(props: FuiTabListProps<T>) => {
   const tabs = React.Children.toArray(children)
     .filter(
       (child): child is React.ReactElement<FuiTabProps<T>> =>
-        React.isValidElement(child) && (child.type as any)?._marker === TAB_MARKER,
+        React.isValidElement(child) && (child.type as any)?._marker === TAB_MARKER
     )
     .map((child) => ({
       props: child.props,
@@ -112,14 +110,19 @@ const FuiTabList = <T extends FuiTabValue>(props: FuiTabListProps<T>) => {
 
   const tabList = (
     <TabList
-      {...rest}
-      className={isVertical ? styles.tabListVertical : styles.tabList}
+      className={mergeClasses(isVertical ? styles.tabListVertical : styles.tabList, className)}
       onTabSelect={handleTabSelect}
       selectedValue={selectedValue}
+      style={style}
       vertical={isVertical}
     >
       {tabs.map((tab) => (
-        <Tab key={String(tab.value)} {...tab.props} value={tab.value}>
+        <Tab
+          key={String(tab.value)}
+          disabled={tab.props.disabled}
+          icon={tab.props.icon}
+          value={tab.value}
+        >
           <span className={tab.value === selectedValue ? styles.tabTextSelected : undefined}>
             {tab.props.name}
           </span>
@@ -134,9 +137,7 @@ const FuiTabList = <T extends FuiTabValue>(props: FuiTabListProps<T>) => {
     <div className={mergeClasses(styles.root, isVertical && styles.rootVertical)}>
       {isMobile ? <div className={styles.scrollWrapper}>{tabList}</div> : tabList}
       {selectedTab && (
-        <div
-          className={mergeClasses(styles.content, isVertical && styles.contentVertical)}
-        >
+        <div className={mergeClasses(styles.content, isVertical && styles.contentVertical)}>
           {selectedTab.props.children}
         </div>
       )}
@@ -145,4 +146,4 @@ const FuiTabList = <T extends FuiTabValue>(props: FuiTabListProps<T>) => {
 };
 
 export { FuiTab, FuiTabList };
-export type { FuiTabProps as TabProps, TabListProps };
+export type { FuiTabProps, FuiTabListProps };

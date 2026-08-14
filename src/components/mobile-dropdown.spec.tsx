@@ -2,7 +2,7 @@ import { render, screen, fireEvent, createEvent } from '@testing-library/react';
 import React from 'react';
 import { vi, describe, it, expect } from 'vitest';
 
-import { FuiMobileDropdown } from './input-dropdown';
+import { FuiMobileDropdown } from './fui-input-dropdown';
 
 vi.mock('@fluentui/react-components', () => ({
   Input: (props: any) => (
@@ -22,7 +22,7 @@ vi.mock('@fluentui/react-components', () => ({
       {props.contentAfter && <div data-testid="content-after">{props.contentAfter}</div>}
     </div>
   ),
-  OverlayDrawer: ({ children, open, onOpenChange }: any) =>
+  Drawer: ({ children, open }: any) =>
     open ? (
       <div data-testid="fluent-drawer">
         {children}
@@ -82,6 +82,10 @@ vi.mock('@fluentui/react-components', () => ({
 vi.mock('@fluentui/react-icons', () => ({
   ChevronDownRegular: ({ onClick }: any) => <span data-testid="chevron-icon" onClick={onClick} />,
   DismissRegular: () => <span data-testid="dismiss-icon" />,
+}));
+
+vi.mock('@hook/use-mobile', () => ({
+  useIsMobile: () => false,
 }));
 
 const options = [

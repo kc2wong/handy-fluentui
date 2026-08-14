@@ -23,7 +23,7 @@ const useStyles = makeStyles({
 });
 
 /** Props for FuiButtonPanel. */
-type ButtonPanelProps = {
+type FuiButtonPanelProps = {
   className?: string;
   /** Horizontal alignment of buttons. Defaults to `'right'`. */
   alignItems?: 'left' | 'right';
@@ -31,7 +31,7 @@ type ButtonPanelProps = {
 };
 
 /** Flex row of action buttons that collapses to a full-width column on mobile. */
-const FuiButtonPanel: React.FC<ButtonPanelProps> = ({
+const FuiButtonPanel: React.FC<FuiButtonPanelProps> = ({
   className,
   alignItems = 'right',
   children,
@@ -54,4 +54,4 @@ const FuiButtonPanel: React.FC<ButtonPanelProps> = ({
 };
 
 export { FuiButtonPanel };
-export type { ButtonPanelProps };
+export type { FuiButtonPanelProps };

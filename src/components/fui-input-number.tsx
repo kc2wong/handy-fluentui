@@ -1,6 +1,5 @@
 import {
   Input,
-  InputProps,
   SpinButton,
   SpinButtonChangeEvent,
   SpinButtonOnChangeData,
@@ -28,14 +27,23 @@ const useStyles = makeStyles({
   },
 });
 
+/** Visual appearance of the underlying Fluent Input/SpinButton. */
+type InputNumberAppearance =
+  | 'outline'
+  | 'underline'
+  | 'filled-darker'
+  | 'filled-lighter'
+  | 'filled-darker-shadow'
+  | 'filled-lighter-shadow';
+
 /**
  * Base number input props. Providing step switches the rendered element from a free-form text
  * input to a SpinButton (direct typing is disabled in SpinButton mode).
  * formatter applies only when the field is not focused.
  */
 type BaseInputNumberProps = Omit<
-  InputProps,
-  'defaultValue' | 'type' | 'value' | 'onChange' | 'id' | 'min' | 'max' | 'minLengh' | 'maxLength'
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'defaultValue' | 'type' | 'value' | 'onChange' | 'id' | 'min' | 'max' | 'size' | 'children' | 'step'
 > & {
   value: number | null;
   onChange: (value: number | null) => void;
@@ -43,26 +51,28 @@ type BaseInputNumberProps = Omit<
   allowNegative?: boolean;
   /** Formats the display value when unfocused. */
   formatter?: (value: number) => string;
+  appearance?: InputNumberAppearance;
+  size?: 'small' | 'medium' | 'large';
   /** Custom CSS class for the number input root. */
   className?: string;
   /** Custom CSS styles for the number input root. */
   style?: React.CSSProperties;
 } & (
-    | {
-        step?: undefined;
-        /** Number of decimal places allowed. Defaults to 0. */
-        precision?: number;
-        min?: number;
-        max?: number;
-      }
-    | {
-        /** Enables SpinButton mode with this increment. precision is fixed at 0 when step is set. */
-        step: number;
-        precision?: 0;
-        min?: number;
-        max?: number;
-      }
-  );
+  | {
+      step?: undefined;
+      /** Number of decimal places allowed. Defaults to 0. */
+      precision?: number;
+      min?: number;
+      max?: number;
+    }
+  | {
+      /** Enables SpinButton mode with this increment. precision is fixed at 0 when step is set. */
+      step: number;
+      precision?: 0;
+      min?: number;
+      max?: number;
+    }
+);
 
 const RawInputNumber: React.FC<
   BaseInputNumberProps & {
@@ -70,6 +80,7 @@ const RawInputNumber: React.FC<
   }
 > = (props) => {
   const {
+    id,
     value,
     onChange,
     precision = 0,
@@ -82,6 +93,10 @@ const RawInputNumber: React.FC<
     max,
     className,
     style,
+    disabled,
+    readOnly,
+    appearance,
+    size,
     ...rest
   } = props;
 
@@ -161,7 +176,6 @@ const RawInputNumber: React.FC<
   };
 
   if (step) {
-    const { appearance, size, ...r } = rest;
     const spinButtonValue = value;
     const spinButtonDisplayValue =
       !isFocused && spinButtonValue !== null
@@ -174,22 +188,30 @@ const RawInputNumber: React.FC<
     };
 
     if (isMobile) {
-      const interactive = !r.disabled && !r.readOnly;
+      const interactive = !disabled && !readOnly;
       const handleUp = () => {
-        if (!interactive) { return; }
+        if (!interactive) {
+          return;
+        }
         const next = (spinButtonValue ?? 0) + step;
-        if (max !== undefined && next > max) { return; }
+        if (max !== undefined && next > max) {
+          return;
+        }
         onChange(next);
       };
       const handleDown = () => {
-        if (!interactive) { return; }
+        if (!interactive) {
+          return;
+        }
         const next = (spinButtonValue ?? 0) - step;
-        if (min !== undefined && next < min) { return; }
+        if (min !== undefined && next < min) {
+          return;
+        }
         onChange(next);
       };
       return (
         <Input
-          {...r}
+          {...rest}
           className={className}
           contentAfter={
             <div className={styles.arrows}>
@@ -205,7 +227,14 @@ const RawInputNumber: React.FC<
               />
             </div>
           }
-          onKeyDown={(e) => { if (e.key !== 'Tab') { e.preventDefault(); } }}
+          disabled={disabled}
+          id={id}
+          onKeyDown={(e) => {
+            if (e.key !== 'Tab') {
+              e.preventDefault();
+            }
+          }}
+          readOnly={readOnly}
           style={style}
           type="text"
           value={spinButtonDisplayValue}
@@ -215,7 +244,6 @@ const RawInputNumber: React.FC<
 
     return (
       <SpinButton
-        {...r}
         appearance={
           appearance === 'filled-darker-shadow'
             ? 'filled-darker'
@@ -224,11 +252,14 @@ const RawInputNumber: React.FC<
               : appearance
         }
         className={className}
+        disabled={disabled}
         displayValue={spinButtonDisplayValue}
+        id={id}
         max={max}
         min={min}
         onChange={onSpinButtonChange}
         onKeyDown={(e) => e.preventDefault()}
+        readOnly={readOnly}
         size={size === 'large' ? 'medium' : size}
         step={step}
         style={style}
@@ -243,11 +274,16 @@ const RawInputNumber: React.FC<
   return (
     <Input
       {...rest}
+      appearance={appearance}
       className={className}
+      disabled={disabled}
+      id={id}
       onBlur={handleBlur}
       onChange={handleChange}
       onFocus={handleFocus}
       onKeyDown={handleKeyDown}
+      readOnly={readOnly}
+      size={size}
       style={style}
       type="text"
       value={displayValue}
@@ -258,14 +294,14 @@ const RawInputNumber: React.FC<
 const EnhancedInputNumber = withInputField(RawInputNumber);
 
 /** Props for FuiInputNumber. */
-type InputNumberProps = BaseInputNumberProps & FieldLayoutProps;
+type FuiInputNumberProps = BaseInputNumberProps & FieldLayoutProps;
 /** Number input with keystroke filtering. Set step to switch to SpinButton mode. */
-const InputNumber: React.FC<InputNumberProps> = (props) => {
+const FuiInputNumber: React.FC<FuiInputNumberProps> = (props) => {
   const { value, onChange, ...rest } = props;
   const onClear = value !== null ? () => onChange(null) : undefined;
 
   return <EnhancedInputNumber {...rest} onChange={onChange} onClear={onClear} value={value} />;
 };
 
-export { InputNumber as FuiInputNumber };
-export type { InputNumberProps };
+export { FuiInputNumber };
+export type { FuiInputNumberProps };

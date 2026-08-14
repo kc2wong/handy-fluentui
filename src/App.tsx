@@ -1,12 +1,4 @@
-import {
-  Badge,
-  Button,
-  Divider,
-  Radio,
-  makeStyles,
-  mergeClasses,
-  tokens,
-} from '@fluentui/react-components';
+import { Badge, makeStyles, mergeClasses, tokens } from '@fluentui/react-components';
 import { useEffect, useState } from 'react';
 
 import { useBreadcrumb } from '@hook/use-breadcrumb';
@@ -16,22 +8,24 @@ import { useTheme } from '@hook/use-theme';
 import { useToast } from '@hook/use-toast';
 
 import { FuiBreadcrumb } from './components/fui-breadcrumb';
+import { FuiButton } from './components/fui-button';
 import { FuiButtonPanel } from './components/fui-button-panel';
-import { FuiImageCarousel } from './components/fui-image-carousell';
+import { FuiCheckbox } from './components/fui-checkbox';
+import { FuiDivider } from './components/fui-divider';
+import { FuiImageCarousel } from './components/fui-image-carousel';
+import { FuiInputDate } from './components/fui-input-date';
+import { FuiInputDropdown, FuiInputDropdownOption } from './components/fui-input-dropdown';
+import { FuiInputGroup } from './components/fui-input-group';
+import { FuiInputMultiLangText, MultiLangText } from './components/fui-input-multi-lang';
+import { FuiInputNumber } from './components/fui-input-number';
+import { FuiInputText } from './components/fui-input-text';
+import { FuiInputTextArea } from './components/fui-input-textarea';
+import { FuiInputTime, FuiTime } from './components/fui-input-time';
+import { FuiRadioGroup, FuiRadio } from './components/fui-radio';
+import { FuiSwitch } from './components/fui-switch';
 import { FuiTab, FuiTabList } from './components/fui-tab';
 import { FuiColumn, FuiTable } from './components/fui-table';
 import { FuiTooltip } from './components/fui-tooltip';
-import { FuiInputCheckbox } from './components/input-checkbox';
-import { FuiInputDate } from './components/input-date';
-import { FuiInputDropdown, InputDropdownOption } from './components/input-dropdown';
-import { FuiInputGroup } from './components/input-group';
-import { FuiInputMultiLangText, MultiLangText } from './components/input-multi-lang';
-import { FuiInputNumber } from './components/input-number';
-import { FuiInputRadio } from './components/input-radio';
-import { FuiInputSwitch } from './components/input-switch';
-import { FuiInputText } from './components/input-text';
-import { FuiInputTextArea } from './components/input-textarea';
-import { FuiInputTime, FuiTime } from './components/input-time';
 import { ThemeType } from './contexts/handy-fluent-ui-context';
 import { type Lang, useMobileSim } from './main';
 
@@ -360,7 +354,7 @@ const App = ({ lang, onToggleLang }: AppProps) => {
 
   // ─── Options ──────────────────────────────────────────────────────────────
 
-  const countryOptions: InputDropdownOption[] = [
+  const countryOptions: FuiInputDropdownOption[] = [
     { group: 'Asia', text: 'China', value: 'cn' },
     { group: 'Asia', text: 'Hong Kong', value: 'hk' },
     { group: 'Asia', text: 'Japan', value: 'jp' },
@@ -375,7 +369,7 @@ const App = ({ lang, onToggleLang }: AppProps) => {
     { group: 'Oceania', text: 'Australia', value: 'au' },
   ];
 
-  const departmentOptions: InputDropdownOption[] = [
+  const departmentOptions: FuiInputDropdownOption[] = [
     { text: 'Design', value: 'design' },
     { text: 'Engineering', value: 'engineering' },
     { text: 'Finance', value: 'finance' },
@@ -396,25 +390,25 @@ const App = ({ lang, onToggleLang }: AppProps) => {
 
       {/* Settings bar */}
       <div className={styles.settingsBar}>
-        <FuiInputRadio
+        <FuiRadioGroup
           label={t.theme}
           noMessage
-          onChange={(data) => theme.switchTheme(data.value as ThemeType)}
+          onChange={(value) => theme.switchTheme(value as ThemeType)}
           value={theme.currentTheme}
         >
-          <Radio label={t.lightTheme} value="light" />
-          <Radio label={t.darkTheme} value="dark" />
-          <Radio label={t.kidsTheme} value="custom" />
-        </FuiInputRadio>
+          <FuiRadio label={t.lightTheme} value="light" />
+          <FuiRadio label={t.darkTheme} value="dark" />
+          <FuiRadio label={t.kidsTheme} value="custom" />
+        </FuiRadioGroup>
 
         <div style={{ display: 'flex' }}>
-          <FuiInputSwitch checked={lang === 'zh-TW'} label="EN / 繁中" onChange={onToggleLang} />
+          <FuiSwitch checked={lang === 'zh-TW'} label="EN / 繁中" onChange={onToggleLang} />
 
-          <FuiInputSwitch checked={forceMobile} label={t.mobileView} onChange={toggleMobile} />
+          <FuiSwitch checked={forceMobile} label={t.mobileView} onChange={toggleMobile} />
         </div>
       </div>
 
-      <Divider />
+      <FuiDivider />
 
       {/* Tabbed content */}
       <FuiTabList<string>
@@ -450,18 +444,18 @@ const App = ({ lang, onToggleLang }: AppProps) => {
               value={formData.jobTitle}
             />
 
-            <FuiInputRadio
+            <FuiRadioGroup
               label={t.gender}
               labelWidth="quarter"
               layout="horizontal"
-              onChange={(data) => setFormData((prev) => ({ ...prev, gender: data.value }))}
+              onChange={(value) => setFormData((prev) => ({ ...prev, gender: value }))}
               required
               value={formData.gender}
             >
-              <Radio label={t.male} value="male" />
-              <Radio label={t.female} value="female" />
-              <Radio label={t.other} value="other" />
-            </FuiInputRadio>
+              <FuiRadio label={t.male} value="male" />
+              <FuiRadio label={t.female} value="female" />
+              <FuiRadio label={t.other} value="other" />
+            </FuiRadioGroup>
 
             <FuiInputGroup
               items={[
@@ -681,14 +675,13 @@ const App = ({ lang, onToggleLang }: AppProps) => {
               label={t.shift}
             />
 
-            <FuiInputCheckbox
+            <FuiCheckbox
               checked={formData.agreeTerms}
               label={t.agreeTerms}
-              labelPosition="after"
-              onChange={(data) => setFormData((prev) => ({ ...prev, agreeTerms: !!data.checked }))}
+              onChange={(checked) => setFormData((prev) => ({ ...prev, agreeTerms: checked }))}
             />
 
-            <FuiInputSwitch
+            <FuiSwitch
               checked={formData.receiveNotifications}
               label={t.receiveNotifications}
               onChange={set('receiveNotifications')}
@@ -738,12 +731,12 @@ const App = ({ lang, onToggleLang }: AppProps) => {
         </FuiTab>
       </FuiTabList>
 
-      <Divider />
+      <FuiDivider />
 
       {/* Action buttons */}
       <FuiButtonPanel alignItems="right">
         <FuiTooltip text={t.cancelHint}>
-          <Button
+          <FuiButton
             appearance="secondary"
             onClick={() =>
               dialog.openDialog({
@@ -754,10 +747,10 @@ const App = ({ lang, onToggleLang }: AppProps) => {
             }
           >
             {t.cancel}
-          </Button>
+          </FuiButton>
         </FuiTooltip>
         <FuiTooltip text={t.saveHint}>
-          <Button
+          <FuiButton
             appearance="primary"
             onClick={() => {
               spinner.show();
@@ -770,7 +763,7 @@ const App = ({ lang, onToggleLang }: AppProps) => {
             }}
           >
             {t.save}
-          </Button>
+          </FuiButton>
         </FuiTooltip>
       </FuiButtonPanel>
     </div>

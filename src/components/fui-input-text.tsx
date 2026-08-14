@@ -1,16 +1,21 @@
-import { Button, Input, InputProps } from '@fluentui/react-components';
+import { Input } from '@fluentui/react-components';
 import { EyeRegular, EyeOffRegular } from '@fluentui/react-icons';
 import React, { useState } from 'react';
 
+import { FuiIconButton } from './fui-button';
 import { withInputField, FieldLayoutProps } from './with-input-field';
 
 type BaseInputTextProps = Omit<
-  InputProps,
-  'defaultValue' | 'type' | 'id' | 'value' | 'onChange'
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'defaultValue' | 'type' | 'id' | 'value' | 'onChange' | 'children' | 'size'
 > & {
   value: string | null;
   onChange: (value: string | null) => void;
   type?: 'text' | 'email' | 'password';
+  /** Content rendered inside the input, left-aligned (e.g. an icon). */
+  contentBefore?: React.ReactElement;
+  /** Content rendered inside the input, right-aligned (e.g. an icon button). Ignored when type is 'password'. */
+  contentAfter?: React.ReactElement;
   /** Custom CSS class for the input root. */
   className?: string;
   /** Custom CSS styles for the input root. */
@@ -23,11 +28,15 @@ const RawInputText: React.FC<
   }
 > = (props) => {
   const {
+    id,
     type = 'text',
     onChange,
     onKeyDown,
     className,
     style,
+    contentBefore,
+    contentAfter,
+    value,
     ...rest
   } = props;
   const [showPassword, setShowPassword] = useState(false);
@@ -36,15 +45,15 @@ const RawInputText: React.FC<
   const handleKeyDown =
     type === 'email'
       ? (ev: React.KeyboardEvent<HTMLInputElement>) => {
-          if (ev.key === '@' && props.value?.includes('@')) {
+          if (ev.key === '@' && value?.includes('@')) {
             ev.preventDefault();
           }
           onKeyDown?.(ev);
         }
       : onKeyDown;
 
-  const handleChange = (value: string | null | undefined) => {
-    onChange(value ?? null);
+  const handleChange = (newValue: string | null | undefined) => {
+    onChange(newValue ?? null);
   };
 
   const togglePasswordVisibility = () => {
@@ -52,7 +61,7 @@ const RawInputText: React.FC<
   };
 
   const inputType = type === 'password' && showPassword ? 'text' : type;
-  const hasValue = (props.value?.length ?? 0) > 0;
+  const hasValue = (value?.length ?? 0) > 0;
 
   return (
     <Input
@@ -61,8 +70,8 @@ const RawInputText: React.FC<
       contentAfter={
         type === 'password' ? (
           hasValue ? (
-            <Button
-              appearance="subtle"
+            <FuiIconButton
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
               icon={showPassword ? <EyeOffRegular /> : <EyeRegular />}
               onClick={togglePasswordVisibility}
               size="small"
@@ -70,14 +79,16 @@ const RawInputText: React.FC<
             />
           ) : undefined
         ) : (
-          rest.contentAfter
+          contentAfter
         )
       }
+      contentBefore={contentBefore}
+      id={id}
       onChange={(_ev, data) => handleChange(data.value)}
       onKeyDown={handleKeyDown}
       style={style}
       type={inputType}
-      value={props.value ?? ''}
+      value={value ?? ''}
     />
   );
 };
@@ -85,14 +96,14 @@ const RawInputText: React.FC<
 const EnhancedInputText = withInputField(RawInputText);
 
 /** Props for FuiInputText. */
-type InputTextProps = BaseInputTextProps & FieldLayoutProps;
+type FuiInputTextProps = BaseInputTextProps & FieldLayoutProps;
 /** Text input. password type adds a show/hide toggle; email type blocks a second '@' character. */
-const InputText: React.FC<InputTextProps> = (props) => {
+const FuiInputText: React.FC<FuiInputTextProps> = (props) => {
   const { value, onChange, ...rest } = props;
   const onClear = value !== null && value !== '' ? () => onChange(null) : undefined;
 
   return <EnhancedInputText {...rest} onChange={onChange} onClear={onClear} value={value} />;
 };
 
-export { InputText as FuiInputText };
-export type { InputTextProps };
+export { FuiInputText };
+export type { FuiInputTextProps };

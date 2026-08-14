@@ -1,23 +1,19 @@
 import {
   Dropdown,
-  DropdownProps,
   Option,
   OptionGroup,
   Input,
-  OverlayDrawer,
-  DrawerBody,
-  DrawerHeader,
-  DrawerHeaderTitle,
   makeStyles,
   tokens,
   Listbox,
-  Button,
 } from '@fluentui/react-components';
 import { ChevronDownRegular, DismissRegular } from '@fluentui/react-icons';
 import React, { useMemo, useState } from 'react';
 
 import { useIsMobile } from '@hook/use-mobile';
 
+import { FuiIconButton } from './fui-button';
+import { FuiDrawer, FuiDrawerHeader, FuiDrawerBody } from './fui-drawer';
 import { withInputField, FieldLayoutProps } from './with-input-field';
 
 const useStyles = makeStyles({
@@ -32,13 +28,14 @@ const useStyles = makeStyles({
     paddingRight: tokens.spacingHorizontalXXL,
   },
   listboxWrapper: {
-    padding: tokens.spacingVerticalM,
+    paddingTop: tokens.spacingVerticalM,
+    paddingBottom: tokens.spacingVerticalM,
     paddingLeft: tokens.spacingHorizontalXXL,
     paddingRight: tokens.spacingHorizontalXXL,
   },
 });
 
-export type InputDropdownOption = {
+type FuiInputDropdownOption = {
   disabled?: boolean;
   value: string;
   text: string;
@@ -47,31 +44,40 @@ export type InputDropdownOption = {
   render?: () => React.ReactNode;
 };
 
-type BaseInputDropdownProps = Omit<
-  DropdownProps,
-  'children' | 'onChange' | 'onOptionSelect' | 'selectedOptions' | 'value'
-> & {
+type BaseInputDropdownProps = {
   /** Selected value(s). String for single select, array of strings for multi-select. */
   value: string | string[] | null;
   /** Callback fired when selection changes. */
   onChange: (value: string | string[] | null) => void;
   /** List of options to display. */
-  options: InputDropdownOption[];
+  options: FuiInputDropdownOption[];
+  /** Enables multi-select (toggles options, keeps the popup open). Defaults to false. */
+  multiselect?: boolean;
+  placeholder?: string;
   /** When true, change events are silently swallowed. Defaults to false. */
   readOnly?: boolean;
+  disabled?: boolean;
+  /** Custom CSS class for the dropdown root. */
+  className?: string;
+  /** Custom CSS styles for the dropdown root. */
+  style?: React.CSSProperties;
+  /** Style passthrough for the dropdown's listbox popup. */
+  listbox?: { style?: React.CSSProperties };
+  /** Positioning passthrough for the dropdown popup. */
+  positioning?: { autoSize?: boolean };
 };
 
 // ─── Shared utilities ─────────────────────────────────────────────────────────
 
 type GroupedOptions = {
-  groups: Record<string, InputDropdownOption[]>;
-  ungrouped: InputDropdownOption[];
+  groups: Record<string, FuiInputDropdownOption[]>;
+  ungrouped: FuiInputDropdownOption[];
 };
 
 const computeNewSelection = (
   val: string | null,
   selectedValues: string[],
-  multiselect: boolean,
+  multiselect: boolean
 ): string | string[] | null => {
   if (!multiselect) {
     return val;
@@ -85,7 +91,7 @@ const computeNewSelection = (
 };
 
 const renderGroupedOptions = ({ groups, ungrouped }: GroupedOptions) => {
-  const renderOption = (option: InputDropdownOption) => (
+  const renderOption = (option: FuiInputDropdownOption) => (
     <Option key={option.value} disabled={option.disabled} text={option.text} value={option.value}>
       {option.render ? option.render() : option.text}
     </Option>
@@ -103,7 +109,7 @@ const renderGroupedOptions = ({ groups, ungrouped }: GroupedOptions) => {
   );
 };
 
-const useDropdownValues = (value: string | string[] | null, options: InputDropdownOption[]) => {
+const useDropdownValues = (value: string | string[] | null, options: FuiInputDropdownOption[]) => {
   const selectedValues = useMemo(() => {
     if (value == null) {
       return [];
@@ -117,12 +123,12 @@ const useDropdownValues = (value: string | string[] | null, options: InputDropdo
         .filter((o) => selectedValues.includes(o.value))
         .map((o) => o.text)
         .join(', '),
-    [options, selectedValues],
+    [options, selectedValues]
   );
 
   const groupedOptions = useMemo<GroupedOptions>(() => {
-    const groups: Record<string, InputDropdownOption[]> = {};
-    const ungrouped: InputDropdownOption[] = [];
+    const groups: Record<string, FuiInputDropdownOption[]> = {};
+    const ungrouped: FuiInputDropdownOption[] = [];
     options.forEach((option) => {
       if (option.group) {
         (groups[option.group] ??= []).push(option);
@@ -138,7 +144,9 @@ const useDropdownValues = (value: string | string[] | null, options: InputDropdo
 
 // ─── Components ───────────────────────────────────────────────────────────────
 
-const MobileDropdown: React.FC<BaseInputDropdownProps & { id?: string; drawerTitle?: string }> = (props) => {
+const MobileDropdown: React.FC<BaseInputDropdownProps & { id?: string; drawerTitle?: string }> = (
+  props
+) => {
   const {
     value,
     onChange,
@@ -186,27 +194,24 @@ const MobileDropdown: React.FC<BaseInputDropdownProps & { id?: string; drawerTit
         type="text"
         value={displayValue}
       />
-      <OverlayDrawer
+      <FuiDrawer
         className={styles.drawer}
-        onOpenChange={(_, { open }) => setIsDrawerOpen(open)}
+        onOpenChange={setIsDrawerOpen}
         open={isDrawerOpen}
         position="bottom"
       >
-        <DrawerHeader className={styles.drawerHeader}>
-          <DrawerHeaderTitle
-            action={
-              <Button
-                appearance="subtle"
-                aria-label="Close"
-                icon={<DismissRegular />}
-                onClick={() => setIsDrawerOpen(false)}
-              />
-            }
-          >
-            {drawerTitle}
-          </DrawerHeaderTitle>
-        </DrawerHeader>
-        <DrawerBody>
+        <FuiDrawerHeader
+          action={
+            <FuiIconButton
+              aria-label="Close"
+              icon={<DismissRegular />}
+              onClick={() => setIsDrawerOpen(false)}
+            />
+          }
+          className={styles.drawerHeader}
+          title={drawerTitle}
+        />
+        <FuiDrawerBody>
           <div className={styles.listboxWrapper}>
             <Listbox
               multiselect={multiselect}
@@ -218,14 +223,29 @@ const MobileDropdown: React.FC<BaseInputDropdownProps & { id?: string; drawerTit
               {renderGroupedOptions(groupedOptions)}
             </Listbox>
           </div>
-        </DrawerBody>
-      </OverlayDrawer>
+        </FuiDrawerBody>
+      </FuiDrawer>
     </>
   );
 };
 
-const RawInputDropdown: React.FC<BaseInputDropdownProps & { id?: string; drawerTitle?: string }> = (props) => {
-  const { value, onChange, options, multiselect = false, style, readOnly = false, ...rest } = props;
+const RawInputDropdown: React.FC<BaseInputDropdownProps & { id?: string; drawerTitle?: string }> = (
+  props
+) => {
+  const {
+    value,
+    onChange,
+    options,
+    multiselect = false,
+    style,
+    readOnly = false,
+    id,
+    placeholder,
+    disabled,
+    className,
+    listbox,
+    positioning,
+  } = props;
   const isMobile = useIsMobile();
   const { selectedValues, displayValue, groupedOptions } = useDropdownValues(value, options);
 
@@ -239,14 +259,19 @@ const RawInputDropdown: React.FC<BaseInputDropdownProps & { id?: string; drawerT
 
   return (
     <Dropdown
-      {...rest}
-      aria-labelledby={rest.id}
+      aria-labelledby={id}
+      className={className}
+      disabled={disabled}
+      id={id}
+      listbox={listbox}
       multiselect={multiselect}
       onOptionSelect={(_ev, data) => {
         if (!readOnly) {
           handleOptionSelect(data.optionValue ?? null);
         }
       }}
+      placeholder={placeholder}
+      positioning={positioning}
       selectedOptions={selectedValues}
       style={{ width: '100%', ...style }}
       value={displayValue}
@@ -259,16 +284,24 @@ const RawInputDropdown: React.FC<BaseInputDropdownProps & { id?: string; drawerT
 const EnhancedInputdropDown = withInputField(RawInputDropdown);
 
 /** Props for FuiInputDropdown. */
-type InputDropdownProps = BaseInputDropdownProps & FieldLayoutProps;
+type FuiInputDropdownProps = BaseInputDropdownProps & FieldLayoutProps;
 /** Dropdown with single or multi-select. Renders a bottom-sheet drawer on mobile instead of a popup. */
-const InputDropdown: React.FC<InputDropdownProps> = (props) => {
+const FuiInputDropdown: React.FC<FuiInputDropdownProps> = (props) => {
   const { value, onChange, ...rest } = props;
   const hasValue = Array.isArray(value) ? value.length > 0 : value !== null && value !== '';
   const onClear = hasValue ? () => onChange(props.multiselect === true ? [] : null) : undefined;
 
-  return <EnhancedInputdropDown {...rest} drawerTitle={props.label ?? props.placeholder} onChange={onChange} onClear={onClear} value={value} />;
+  return (
+    <EnhancedInputdropDown
+      {...rest}
+      drawerTitle={props.label ?? props.placeholder}
+      onChange={onChange}
+      onClear={onClear}
+      value={value}
+    />
+  );
 };
 
 /** @internal Mobile-only dropdown variant used by FuiInputDropdown. Also exported for use in FuiTable's pagination bar. */
-export { MobileDropdown as FuiMobileDropdown, InputDropdown as FuiInputDropdown };
-export type { InputDropdownProps };
+export { MobileDropdown as FuiMobileDropdown, FuiInputDropdown };
+export type { FuiInputDropdownOption, FuiInputDropdownProps };

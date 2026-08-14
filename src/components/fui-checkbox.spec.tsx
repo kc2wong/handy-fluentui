@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { vi, describe, it, expect } from 'vitest';
 
-import { FuiInputCheckbox } from './input-checkbox';
+import { FuiCheckbox } from './fui-checkbox';
 
 // Completely mock Fluent UI components to avoid ESM issues
 vi.mock('@fluentui/react-components', () => {
@@ -44,14 +44,14 @@ vi.mock('@fluentui/react-components', () => {
 
 describe('InputCheckbox', () => {
   it('renders correctly', () => {
-    render(<FuiInputCheckbox label="Accept Terms" />);
+    render(<FuiCheckbox label="Accept Terms" onChange={() => {}} />);
     expect(screen.getByText('Accept Terms')).toBeInTheDocument();
     expect(screen.getByTestId('fluent-checkbox')).toBeInTheDocument();
   });
 
   it('calls onChange when not readOnly', () => {
     const handleChange = vi.fn();
-    render(<FuiInputCheckbox label="Test" onChange={(data) => handleChange(data)} />);
+    render(<FuiCheckbox label="Test" onChange={(data) => handleChange(data)} />);
     
     const checkbox = screen.getByTestId('fluent-checkbox');
     fireEvent.click(checkbox);
@@ -61,7 +61,7 @@ describe('InputCheckbox', () => {
 
   it('does not call onChange when readOnly is true', () => {
     const handleChange = vi.fn();
-    render(<FuiInputCheckbox label="Test" onChange={(data) => handleChange(data)} readOnly={true} />);
+    render(<FuiCheckbox label="Test" onChange={(data) => handleChange(data)} readOnly={true} />);
     
     const checkbox = screen.getByTestId('fluent-checkbox');
     fireEvent.click(checkbox);
@@ -72,9 +72,10 @@ describe('InputCheckbox', () => {
   it('supports className and style', () => {
     const customStyle = { color: 'blue' };
     render(
-      <FuiInputCheckbox
+      <FuiCheckbox
         className="custom-checkbox-class"
         label="Test"
+        onChange={() => {}}
         style={customStyle}
       />,
     );

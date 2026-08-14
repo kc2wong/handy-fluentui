@@ -1,8 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-import { FuiInputGroup } from './input-group';
-import { FuiInputText } from './input-text';
+import { FuiInputGroup } from './fui-input-group';
+import { FuiInputText } from './fui-input-text';
 
 const mockIsMobile = vi.fn();
 vi.mock('@hook/use-mobile', () => ({

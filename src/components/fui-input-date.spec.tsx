@@ -2,7 +2,7 @@ import { render, screen, fireEvent, createEvent } from '@testing-library/react';
 import React from 'react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-import { FuiInputDate } from './input-date';
+import { FuiInputDate } from './fui-input-date';
 
 // Mock Fluent UI components
 vi.mock('@fluentui/react-components', () => {
@@ -47,7 +47,7 @@ vi.mock('@fluentui/react-components', () => {
         {props.children}
       </button>
     ),
-    OverlayDrawer: ({ children, open, onOpenChange }: any) =>
+    Drawer: ({ children, open, onOpenChange }: any) =>
       open ? (
         <div data-testid="fluent-drawer">
           <button onClick={() => onOpenChange(null, { open: false })}>Close</button>

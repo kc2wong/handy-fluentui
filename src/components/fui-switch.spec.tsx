@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { vi, describe, it, expect } from 'vitest';
 
-import { FuiInputSwitch } from './input-switch';
+import { FuiSwitch } from './fui-switch';
 
 // Completely mock Fluent UI components to avoid ESM issues
 vi.mock('@fluentui/react-components', () => {
@@ -43,14 +43,14 @@ vi.mock('@fluentui/react-components', () => {
 
 describe('InputSwitch', () => {
   it('renders correctly', () => {
-    render(<FuiInputSwitch label="Enable Notifications" onChange={() => {}}/>);
+    render(<FuiSwitch label="Enable Notifications" onChange={() => {}}/>);
     expect(screen.getByText('Enable Notifications')).toBeInTheDocument();
     expect(screen.getByTestId('fluent-switch')).toBeInTheDocument();
   });
 
   it('calls onChange when not readOnly', () => {
     const handleChange = vi.fn();
-    render(<FuiInputSwitch label="Test" onChange={handleChange} />);
+    render(<FuiSwitch label="Test" onChange={handleChange} />);
     
     const switchElement = screen.getByTestId('fluent-switch');
     fireEvent.click(switchElement);
@@ -60,7 +60,7 @@ describe('InputSwitch', () => {
 
   it('does not call onChange when readOnly is true', () => {
     const handleChange = vi.fn();
-    render(<FuiInputSwitch label="Test" onChange={handleChange} readOnly={true} />);
+    render(<FuiSwitch label="Test" onChange={handleChange} readOnly={true} />);
     
     const switchElement = screen.getByTestId('fluent-switch');
     fireEvent.click(switchElement);
@@ -71,7 +71,7 @@ describe('InputSwitch', () => {
   it('supports className and style', () => {
     const customStyle = { color: 'brown' };
     render(
-      <FuiInputSwitch
+      <FuiSwitch
         className="custom-switch-class"
         label="Test"
         onChange={() => {}}

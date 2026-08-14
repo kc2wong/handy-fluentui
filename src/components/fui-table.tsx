@@ -11,7 +11,6 @@ import {
   tokens,
   makeStyles,
   Body1,
-  Button,
   Dropdown,
   Option,
   Divider,
@@ -30,8 +29,9 @@ import { useLogger } from '@hook/use-logger';
 import { useIsMobile } from '@hook/use-mobile';
 import { template } from '@util/string-util';
 
+import { FuiIconButton } from './fui-button';
+import { FuiMobileDropdown } from './fui-input-dropdown';
 import { FuiTooltip } from './fui-tooltip';
-import { FuiMobileDropdown } from './input-dropdown';
 
 // ── Styles ───────────────────────────────────────────────────────────────────
 
@@ -153,7 +153,7 @@ type ColumnWithNeither = ColumnPropsBase & {
 };
 
 /** Column definition union. Use formatter for text cells, builder for rich content, neither for plain string cast. */
-type ColumnProps<T = Record<string, unknown>> =
+type FuiColumnProps<T = Record<string, unknown>> =
   ColumnWithFormatter<T> | ColumnWithBuilder<T> | ColumnWithNeither;
 
 /** Label overrides for FuiTable pagination text. All fields are optional; built-in English defaults are used for any omitted field. */
@@ -194,7 +194,7 @@ type PaginationProps = {
 const COLUMN_MARKER = Symbol.for('FuiColumn');
 
 /** Config-carrier component that declares a table column. Must be a direct child of FuiTable. Renders nothing. */
-const Column: React.FC<ColumnProps> = Object.assign(() => null, { _marker: COLUMN_MARKER });
+const FuiColumn: React.FC<FuiColumnProps> = Object.assign(() => null, { _marker: COLUMN_MARKER });
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -207,16 +207,16 @@ const getField = (obj: Record<string, unknown>, path: string): unknown => {
   }, obj);
 };
 
-const getColumnDefs = <T,>(children: React.ReactNode): ColumnProps<T>[] => {
+const getColumnDefs = <T,>(children: React.ReactNode): FuiColumnProps<T>[] => {
   return React.Children.toArray(children)
     .filter(
-      (child): child is React.ReactElement<ColumnProps<T>> =>
+      (child): child is React.ReactElement<FuiColumnProps<T>> =>
         React.isValidElement(child) && (child.type as any)?._marker === COLUMN_MARKER,
     )
-    .map((child) => child.props as ColumnProps<T>);
+    .map((child) => child.props as FuiColumnProps<T>);
 };
 
-const renderCell = <T,>(col: ColumnProps<T>, row: T): React.ReactNode => {
+const renderCell = <T,>(col: FuiColumnProps<T>, row: T): React.ReactNode => {
   const value = getField(row as Record<string, unknown>, col.field);
 
   if (col.builder) {
@@ -278,8 +278,7 @@ const PaginationBar = ({
       {/* Row 1 — navigation */}
       <div className={mergeClasses(styles.navRow, isMobile && styles.navRowMobile)}>
         <FuiTooltip text={prevNLabel}>
-          <Button
-            appearance="subtle"
+          <FuiIconButton
             aria-label={prevNLabel}
             disabled={!hasPrev}
             icon={<ChevronDoubleLeftRegular />}
@@ -287,8 +286,7 @@ const PaginationBar = ({
           />
         </FuiTooltip>
         <FuiTooltip text={prevLabel}>
-          <Button
-            appearance="subtle"
+          <FuiIconButton
             aria-label={prevLabel}
             disabled={!hasPrev}
             icon={<ChevronLeftRegular />}
@@ -299,8 +297,7 @@ const PaginationBar = ({
           <Body1>{pageRange}</Body1>
         </span>
         <FuiTooltip text={nextLabel}>
-          <Button
-            appearance="subtle"
+          <FuiIconButton
             aria-label={nextLabel}
             disabled={!hasNext}
             icon={<ChevronRightRegular />}
@@ -308,8 +305,7 @@ const PaginationBar = ({
           />
         </FuiTooltip>
         <FuiTooltip text={nextNLabel}>
-          <Button
-            appearance="subtle"
+          <FuiIconButton
             aria-label={nextNLabel}
             disabled={!hasNext}
             icon={<ChevronDoubleRightRegular />}
@@ -369,7 +365,7 @@ const PaginationBar = ({
 // ── Table ────────────────────────────────────────────────────────────────────
 
 /** Props for FuiTable. Columns are declared as FuiColumn JSX children. */
-type TableProps<T extends Record<string, unknown>> = {
+type FuiTableProps<T extends Record<string, unknown>> = {
   data: T[];
   pagination?: PaginationProps;
   /** Called when the user changes page or clicks a sortable column header. Without this, sort state is local-only and a warning is logged. */
@@ -389,14 +385,14 @@ type TableProps<T extends Record<string, unknown>> = {
 };
 
 /** Data table driven by FuiColumn children. Supports sorting and pagination. */
-const Table = <T extends Record<string, unknown>>({
+const FuiTable = <T extends Record<string, unknown>>({
   data,
   onPageOrSort,
   pagination,
   width,
   langLabel,
   children,
-}: TableProps<T>) => {
+}: FuiTableProps<T>) => {
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDirection>('asc');
 
@@ -404,7 +400,7 @@ const Table = <T extends Record<string, unknown>>({
   const logger = useLogger();
   const columns = getColumnDefs(children);
 
-  const getCellStyle = (col: ColumnProps<T>): React.CSSProperties => {
+  const getCellStyle = (col: FuiColumnProps<T>): React.CSSProperties => {
     const w = col.style?.width;
     if (w != null) {
       return {
@@ -542,5 +538,5 @@ const Table = <T extends Record<string, unknown>>({
   );
 };
 
-export { Table as FuiTable, Column as FuiColumn };
-export type { TableProps, ColumnProps, PaginationProps, FuiTableLabel };
+export { FuiTable, FuiColumn };
+export type { FuiTableProps, FuiColumnProps, PaginationProps, FuiTableLabel };

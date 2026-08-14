@@ -1,32 +1,33 @@
-import { Textarea, TextareaProps } from '@fluentui/react-components';
+import { Textarea } from '@fluentui/react-components';
 import React from 'react';
 
 import { withInputField, FieldLayoutProps } from './with-input-field';
 
-type BaseInputTextAreaProps = Omit<TextareaProps, 'defaultValue' | 'id' | 'value' | 'onChange'> & {
+type BaseInputTextAreaProps = Omit<
+  React.TextareaHTMLAttributes<HTMLTextAreaElement>,
+  'defaultValue' | 'id' | 'value' | 'onChange'
+> & {
   value: string | null;
   onChange: (value: string | null) => void;
   /** Custom CSS class for the textarea root. */
   className?: string;
   /** Custom CSS styles for the textarea root. */
   style?: React.CSSProperties;
-  /** When true, change events are silently swallowed. Defaults to false. */
-  readOnly?: boolean;
 };
 
 /** Props for FuiInputTextArea. When maxLength is set, a character counter appears in the message area unless additionalMessage is provided. */
-type InputTextAreaProps = BaseInputTextAreaProps & FieldLayoutProps;
+type FuiInputTextAreaProps = BaseInputTextAreaProps & FieldLayoutProps;
 
 const RawTextArea: React.FC<BaseInputTextAreaProps & { id?: string }> = (props) => {
-  const { value, onChange, className, style, readOnly = false, rows = 4, ...rest } = props;
+  const { id, value, onChange, className, style, rows = 4, maxLength, ...rest } = props;
   return (
     <Textarea
       {...rest}
       className={className}
+      id={id}
+      maxLength={maxLength}
       onChange={(_e, data) => {
-        if (!readOnly) {
-          onChange(data.value ?? null);
-        }
+        onChange(data.value ?? null);
       }}
       rows={rows}
       style={style}
@@ -38,7 +39,7 @@ const RawTextArea: React.FC<BaseInputTextAreaProps & { id?: string }> = (props) 
 const TextareaWithField = withInputField(RawTextArea);
 
 /** Multi-line text area. Automatically appends a character counter when maxLength is set and no additionalMessage is given. */
-const InputTextArea: React.FC<InputTextAreaProps> = (props) => {
+const FuiInputTextArea: React.FC<FuiInputTextAreaProps> = (props) => {
   const { value, maxLength, additionalMessage, onChange, ...rest } = props;
 
   const charCounter = maxLength !== undefined ? `${(value ?? '').length}/${maxLength}` : undefined;
@@ -56,5 +57,5 @@ const InputTextArea: React.FC<InputTextAreaProps> = (props) => {
   );
 };
 
-export { InputTextArea as FuiInputTextArea };
-export type { InputTextAreaProps };
+export { FuiInputTextArea };
+export type { FuiInputTextAreaProps };

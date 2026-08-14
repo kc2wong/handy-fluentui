@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { vi, describe, it, expect } from 'vitest';
 
-import { FuiInputDropdown } from './input-dropdown';
+import { FuiInputDropdown } from './fui-input-dropdown';
 
 vi.mock('@fluentui/react-components', () => ({
   Label: ({ children, htmlFor, required, className }: any) => (
@@ -47,7 +47,7 @@ vi.mock('@fluentui/react-components', () => ({
     </div>
   ),
   Listbox: () => null,
-  OverlayDrawer: () => null,
+  Drawer: () => null,
   DrawerBody: () => null,
   OptionGroup: ({ children, label }: any) => (
     <div data-testid={`group-${label}`}>

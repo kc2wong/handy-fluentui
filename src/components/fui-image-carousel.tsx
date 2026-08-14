@@ -12,7 +12,7 @@ import {
 import * as React from 'react';
 
 /** Props for FuiImageCarousel. */
-type ImageCarouselProps = {
+type FuiImageCarouselProps = {
   /** URLs of images to display as carousel slides. */
   images: string[];
   /** Tooltip label overrides for the carousel navigation buttons. */
@@ -27,8 +27,10 @@ const getAnnouncement: CarouselAnnouncerFunction = (index: number, totalSlides: 
   `Carousel slide ${index + 1} of ${totalSlides}`;
 
 /** Circular image carousel with navigation and autoplay controls. */
-const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, langLabel: imageCarousellLabel }) => {
-
+const FuiImageCarousel: React.FC<FuiImageCarouselProps> = ({
+  images,
+  langLabel: imageCarousellLabel,
+}) => {
   return (
     <div style={{ width: '100%' }}>
       <Carousel announcement={getAnnouncement} circular groupSize={1}>
@@ -89,5 +91,5 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, langLabel: imageC
   );
 };
 
-export type { ImageCarouselProps };
-export { ImageCarousel as FuiImageCarousel };
+export { FuiImageCarousel };
+export type { FuiImageCarouselProps };

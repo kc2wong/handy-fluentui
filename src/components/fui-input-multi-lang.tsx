@@ -1,20 +1,12 @@
-import {
-  Button,
-  InputProps,
-  OverlayDrawer,
-  DrawerBody,
-  DrawerHeader,
-  DrawerHeaderTitle,
-  makeStyles,
-  tokens,
-  mergeClasses,
-} from '@fluentui/react-components';
+import { makeStyles, tokens, mergeClasses } from '@fluentui/react-components';
 import { DismissRegular, TranslateRegular } from '@fluentui/react-icons';
 import React, { useState } from 'react';
 
 import { useIsMobile } from '@hook/use-mobile';
 
-import { FuiInputText, InputTextProps } from './input-text';
+import { FuiIconButton } from './fui-button';
+import { FuiDrawer, FuiDrawerHeader, FuiDrawerBody } from './fui-drawer';
+import { FuiInputText, FuiInputTextProps } from './fui-input-text';
 import { withInputField, FieldLayoutProps } from './with-input-field';
 
 /** Holds text in up to three languages, mapped positionally to the slots in SupportedLanguage. Null means the slot is unpopulated. */
@@ -28,8 +20,8 @@ type MultiLangText = {
 };
 
 type BaseInputMultiLangTextProps = Omit<
-  InputProps,
-  'defaultValue' | 'type' | 'id' | 'value' | 'onChange' | 'label'
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'defaultValue' | 'id' | 'onChange' | 'type' | 'value' | 'children'
 > & {
   value: MultiLangText | null;
   onChange: (value: MultiLangText | null) => void;
@@ -40,8 +32,8 @@ type BaseInputMultiLangTextProps = Omit<
   className?: string;
   /** Custom CSS styles for the input root. */
   style?: React.CSSProperties;
-  /** Component used to render each per-language field in the drawer. Must accept InputTextProps. Defaults to FuiInputText. */
-  textComponent?: React.ComponentType<InputTextProps>;
+  /** Component used to render each per-language field in the drawer. Must accept FuiInputTextProps. Defaults to FuiInputText. */
+  textComponent?: React.ComponentType<FuiInputTextProps>;
 };
 
 const useStyles = makeStyles({
@@ -65,10 +57,10 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: tokens.spacingVerticalL,
-    padding: tokens.spacingVerticalL,
+    paddingTop: tokens.spacingVerticalL,
+    paddingBottom: tokens.spacingVerticalL,
     paddingLeft: tokens.spacingHorizontalXXL,
     paddingRight: tokens.spacingHorizontalXXL,
-    overflowY: 'auto',
   },
 });
 
@@ -135,30 +127,27 @@ const RawInputMultiLangText: React.FC<
     <TranslateRegular onClick={() => setIsDrawerOpen(true)} style={{ cursor: 'pointer' }} />
   );
   const drawer = (
-    <OverlayDrawer
+    <FuiDrawer
       className={mergeClasses(
         styles.drawerBase,
-        isMobile ? styles.drawerMobile : styles.drawerDesktop,
+        isMobile ? styles.drawerMobile : styles.drawerDesktop
       )}
-      onOpenChange={(_, { open }) => setIsDrawerOpen(open)}
+      onOpenChange={setIsDrawerOpen}
       open={isDrawerOpen}
-      position={isMobile ? 'bottom' : 'end'}
+      position="end"
     >
-      <DrawerHeader className={styles.drawerHeader}>
-        <DrawerHeaderTitle
-          action={
-            <Button
-              appearance="subtle"
-              aria-label="Close"
-              icon={<DismissRegular />}
-              onClick={() => setIsDrawerOpen(false)}
-            />
-          }
-        >
-          {drawerTitle}
-        </DrawerHeaderTitle>
-      </DrawerHeader>
-      <DrawerBody className={styles.drawerBody}>
+      <FuiDrawerHeader
+        action={
+          <FuiIconButton
+            aria-label="Close"
+            icon={<DismissRegular />}
+            onClick={() => setIsDrawerOpen(false)}
+          />
+        }
+        className={styles.drawerHeader}
+        title={drawerTitle}
+      />
+      <FuiDrawerBody className={styles.drawerBody}>
         <TextComponent
           disabled={disabled}
           label={languages[0] || 'Lang One'}
@@ -184,8 +173,8 @@ const RawInputMultiLangText: React.FC<
             value={value?.valueInLangThree ?? null}
           />
         )}
-      </DrawerBody>
-    </OverlayDrawer>
+      </FuiDrawerBody>
+    </FuiDrawer>
   );
 
   return (
@@ -198,7 +187,7 @@ const RawInputMultiLangText: React.FC<
         disabled={disabled}
         label={null}
         noMessage
-        onChange={(value) => handleChange(value)}
+        onChange={(val) => handleChange(val)}
         readOnly={readOnly}
         style={style}
         value={displayValue}
@@ -211,16 +200,22 @@ const RawInputMultiLangText: React.FC<
 const EnhancedInputMultiLangText = withInputField(RawInputMultiLangText);
 
 /** Props for FuiInputMultiLangText. label is required and doubles as the per-language drawer title. */
-type InputMultiLangTextProps = BaseInputMultiLangTextProps & FieldLayoutProps;
+type FuiInputMultiLangTextProps = BaseInputMultiLangTextProps & FieldLayoutProps;
 /** Text input with per-language values. Translate icon opens a drawer with one input per configured language. */
-const InputMultiLangText: React.FC<InputMultiLangTextProps> = (props) => {
+const FuiInputMultiLangText: React.FC<FuiInputMultiLangTextProps> = (props) => {
   const { value, onChange } = props;
   const hasValue =
     value && (value.valueInLangOne || value.valueInLangTwo || value.valueInLangThree);
   const onClear = hasValue ? () => onChange(null) : undefined;
 
-  return <EnhancedInputMultiLangText {...props} drawerTitle={props.label ?? props.placeholder} onClear={onClear} />;
+  return (
+    <EnhancedInputMultiLangText
+      {...props}
+      drawerTitle={props.label ?? props.placeholder ?? ''}
+      onClear={onClear}
+    />
+  );
 };
 
-export { InputMultiLangText as FuiInputMultiLangText };
-export type { MultiLangText, InputMultiLangTextProps };
+export { FuiInputMultiLangText };
+export type { MultiLangText, FuiInputMultiLangTextProps };

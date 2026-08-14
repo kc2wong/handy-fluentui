@@ -4,7 +4,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 import { HandyFluentUiContext } from '@context/handy-fluent-ui-context';
 
-import { FuiInputMultiLangText, MultiLangText } from './input-multi-lang';
+import { FuiInputMultiLangText, MultiLangText } from './fui-input-multi-lang';
 
 // Mock Fluent UI components
 vi.mock('@fluentui/react-components', () => {
@@ -46,7 +46,7 @@ vi.mock('@fluentui/react-components', () => {
         <span data-testid="info-hint">{info}</span>
       </label>
     ),
-    OverlayDrawer: ({ children, open, position, className }: any) =>
+    Drawer: ({ children, open, position, className }: any) =>
       open ? (
         <div className={className} data-position={position} data-testid="fluent-drawer">
           {children}

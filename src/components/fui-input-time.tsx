@@ -1,4 +1,4 @@
-import { Input, InputProps, makeStyles, mergeClasses, tokens } from '@fluentui/react-components';
+import { Input, makeStyles, mergeClasses, tokens } from '@fluentui/react-components';
 import { ChevronDownRegular, ChevronUpRegular } from '@fluentui/react-icons';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -44,12 +44,11 @@ type Time = {
   second: number;
 };
 
-type BaseInputTimeProps = Omit<
-  InputProps,
-  'contentAfter' | 'contentBefore' | 'defaultValue' | 'id' | 'input' | 'onChange' | 'type' | 'value'
-> & {
+type BaseInputTimeProps = {
   value: Time | null;
   onChange: (time: Time | null) => void;
+  placeholder?: string;
+  disabled?: boolean;
   /** When true, show the time in 24-hour format, otherwise show AM/PM toggle. Default is true. */
   in24HourFormat?: boolean;
   /** When true, allow user to select a value for seconds. Default is false. */
@@ -74,7 +73,7 @@ const formatTime = (value: Time | null, withSeconds: boolean, in24HourFormat: bo
   if (value === null) {
     return '';
   }
-  const displayH = in24HourFormat ? value.hour : (value.hour % 12 || 12);
+  const displayH = in24HourFormat ? value.hour : value.hour % 12 || 12;
   const hStr = String(displayH).padStart(2, '0');
   const mStr = String(value.minute).padStart(2, '0');
   const sStr = String(value.second).padStart(2, '0');
@@ -82,13 +81,24 @@ const formatTime = (value: Time | null, withSeconds: boolean, in24HourFormat: bo
 };
 
 const getSegment = (pos: number | null | undefined, withSeconds: boolean): Segment => {
-  if (pos == null) { return withSeconds ? 's' : 'm'; }
-  if (pos < 3) { return 'h'; }
-  if (pos < 6) { return 'm'; }
+  if (pos == null) {
+    return withSeconds ? 's' : 'm';
+  }
+  if (pos < 3) {
+    return 'h';
+  }
+  if (pos < 6) {
+    return 'm';
+  }
   return 's';
 };
 
-const adjustTime = (value: Time | null, segment: Segment, delta: 1 | -1, advanceNext: boolean): Time => {
+const adjustTime = (
+  value: Time | null,
+  segment: Segment,
+  delta: 1 | -1,
+  advanceNext: boolean
+): Time => {
   const base = value ?? NULL_TIME;
 
   if (segment === 's') {
@@ -130,7 +140,7 @@ const RawInputTime: React.FC<BaseInputTimeProps & { id?: string }> = (props) => 
     className,
     style,
     id,
-    ...rest
+    placeholder,
   } = props;
 
   const styles = useStyles();
@@ -160,14 +170,18 @@ const RawInputTime: React.FC<BaseInputTimeProps & { id?: string }> = (props) => 
   const handleBlur = () => setActiveSegment(null);
 
   const handleArrow = (delta: 1 | -1) => {
-    if (!interactive) { return; }
+    if (!interactive) {
+      return;
+    }
     const segment = activeSegment ?? (withSeconds ? 's' : 'm');
     pendingCursorPos.current = inputRef.current?.selectionStart ?? null;
     onChange(adjustTime(value, segment, delta, cascadeCarry));
   };
 
   const handleAmPmToggle = () => {
-    if (!interactive) { return; }
+    if (!interactive) {
+      return;
+    }
     const base = value ?? NULL_TIME;
     onChange({ ...base, hour: base.hour >= 12 ? base.hour - 12 : base.hour + 12 });
   };
@@ -175,7 +189,7 @@ const RawInputTime: React.FC<BaseInputTimeProps & { id?: string }> = (props) => 
   const iconClass = mergeClasses(
     styles.arrowIcon,
     isMobile && styles.arrowIconMobile,
-    !interactive && styles.arrowIconDisabled,
+    !interactive && styles.arrowIconDisabled
   );
 
   const arrows = (
@@ -193,19 +207,19 @@ const RawInputTime: React.FC<BaseInputTimeProps & { id?: string }> = (props) => 
     </div>
   );
 
-  const amPmToggle = !in24HourFormat && value !== null ? (
-    <span
-      className={interactive ? styles.amPm : mergeClasses(styles.amPm, styles.amPmDisabled)}
-      onClick={interactive ? handleAmPmToggle : undefined}
-      onMouseDown={interactive ? (e) => e.preventDefault() : undefined}
-    >
-      {isPm ? 'PM' : 'AM'}
-    </span>
-  ) : undefined;
+  const amPmToggle =
+    !in24HourFormat && value !== null ? (
+      <span
+        className={interactive ? styles.amPm : mergeClasses(styles.amPm, styles.amPmDisabled)}
+        onClick={interactive ? handleAmPmToggle : undefined}
+        onMouseDown={interactive ? (e) => e.preventDefault() : undefined}
+      >
+        {isPm ? 'PM' : 'AM'}
+      </span>
+    ) : undefined;
 
   return (
     <Input
-      {...rest}
       autoComplete="off"
       className={className}
       contentAfter={arrows}
@@ -216,7 +230,12 @@ const RawInputTime: React.FC<BaseInputTimeProps & { id?: string }> = (props) => 
       onBlur={handleBlur}
       onClick={handleClick}
       onFocus={handleFocus}
-      onKeyDown={(e) => { if (e.key !== 'Tab') { e.preventDefault(); } }}
+      onKeyDown={(e) => {
+        if (e.key !== 'Tab') {
+          e.preventDefault();
+        }
+      }}
+      placeholder={placeholder}
       readOnly={readOnly}
       style={{ width: '100%', ...style }}
       type="text"
@@ -228,15 +247,15 @@ const RawInputTime: React.FC<BaseInputTimeProps & { id?: string }> = (props) => 
 const EnhancedInputTime = withInputField(RawInputTime);
 
 /** Props for FuiInputTime. */
-type InputTimeProps = BaseInputTimeProps & FieldLayoutProps;
+type FuiInputTimeProps = BaseInputTimeProps & FieldLayoutProps;
 
 /** Time picker with up/down arrows. Shows AM/PM toggle when in24HourFormat is false. */
-const InputTime: React.FC<InputTimeProps> = (props) => {
+const FuiInputTime: React.FC<FuiInputTimeProps> = (props) => {
   const { value, onChange, ...rest } = props;
   const onClear =
     value !== null && !props.readOnly && !props.disabled ? () => onChange(null) : undefined;
   return <EnhancedInputTime {...rest} onChange={onChange} onClear={onClear} value={value} />;
 };
 
-export { InputTime as FuiInputTime };
-export type { InputTimeProps, Time as FuiTime };
+export { FuiInputTime };
+export type { FuiInputTimeProps, Time as FuiTime };

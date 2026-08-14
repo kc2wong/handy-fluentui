@@ -2,7 +2,7 @@ import { render, screen, fireEvent, createEvent } from '@testing-library/react';
 import React from 'react';
 import { vi, describe, it, expect } from 'vitest';
 
-import { FuiMobileDate } from './input-date';
+import { FuiMobileDate } from './fui-input-date';
 
 // Mock Fluent UI components
 vi.mock('@fluentui/react-components', () => {
@@ -27,7 +27,7 @@ vi.mock('@fluentui/react-components', () => {
         )}
       </div>
     ),
-    OverlayDrawer: ({ children, open, onOpenChange }: any) =>
+    Drawer: ({ children, open, onOpenChange }: any) =>
       open ? (
         <div data-testid="fluent-drawer">
           <button onClick={() => onOpenChange(null, { open: false })}>Close</button>
@@ -61,6 +61,10 @@ vi.mock('@fluentui/react-calendar-compat', () => {
 vi.mock('@fluentui/react-icons', () => ({
   CalendarRegular: ({ onClick }: any) => <span data-testid="calendar-icon" onClick={onClick} />,
   DismissRegular: ({ onClick }: any) => <span data-testid="dismiss-icon" onClick={onClick} />,
+}));
+
+vi.mock('@hook/use-mobile', () => ({
+  useIsMobile: () => false,
 }));
 
 describe('MobileDate', () => {

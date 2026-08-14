@@ -148,7 +148,7 @@ vi.mock('@hook/use-mobile', () => ({
   useIsMobile: () => mockIsMobile(),
 }));
 
-vi.mock('./input-dropdown', () => ({
+vi.mock('./fui-input-dropdown', () => ({
   FuiMobileDropdown: ({ value, onChange, options }: any) => (
     <select data-testid="mobile-dropdown" onChange={(e) => onChange(e.target.value)} value={value}>
       {options.map((opt: any) => (

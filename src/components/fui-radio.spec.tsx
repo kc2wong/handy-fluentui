@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
 
-import { FuiInputRadio } from './input-radio';
+import { FuiRadioGroup } from './fui-radio';
 
 vi.mock('@hook/use-mobile', () => ({
   useIsMobile: () => false,
@@ -55,10 +55,10 @@ vi.mock('@fluentui/react-components', () => ({
 describe('InputRadio', () => {
   it('renders with label and options', () => {
     render(
-      <FuiInputRadio label="Gender">
+      <FuiRadioGroup label="Gender">
         <span data-testid="option">Male</span>
         <span data-testid="option">Female</span>
-      </FuiInputRadio>,
+      </FuiRadioGroup>,
     );
 
     expect(screen.getByText('Gender')).toBeInTheDocument();
@@ -67,9 +67,9 @@ describe('InputRadio', () => {
 
   it('passes value to RadioGroup', () => {
     render(
-      <FuiInputRadio label="Gender" value="male">
+      <FuiRadioGroup label="Gender" value="male">
         <div />
-      </FuiInputRadio>,
+      </FuiRadioGroup>,
     );
 
     expect(screen.getByTestId('fluent-radiogroup')).toHaveAttribute('data-value', 'male');
@@ -78,13 +78,13 @@ describe('InputRadio', () => {
   it('supports className and style', () => {
     const customStyle = { color: 'pink' };
     render(
-      <FuiInputRadio
+      <FuiRadioGroup
         className="custom-radio-class"
         label="Test"
         style={customStyle}
       >
         <div />
-      </FuiInputRadio>,
+      </FuiRadioGroup>,
     );
     const radioGroup = screen.getByTestId('fluent-radiogroup');
     expect(radioGroup).toHaveClass('custom-radio-class');
