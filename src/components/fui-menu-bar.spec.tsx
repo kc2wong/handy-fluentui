@@ -16,8 +16,22 @@ import {
 
 // Completely mock Fluent UI Menu components to avoid ESM issues.
 // All popovers render inline (no real positioning) so items are always queryable.
+//
+// MenuItemRadio/MenuItemCheckbox derive `checked` from a Menu-level `checkedValues` map and
+// report changes via `onCheckedValueChange` rather than taking a `checked`/`onClick` prop
+// directly, so the mock wires that same contract through a small context, mirroring how the
+// real Menu/MenuList pair does it.
 vi.mock('@fluentui/react-components', () => {
-  const Menu = ({ children }: any) => <>{children}</>;
+  const MenuCheckedContext = React.createContext<{
+    checkedValues: Record<string, string[]>;
+    onCheckedValueChange?: (event: unknown, data: { name: string; checkedItems: string[] }) => void;
+  }>({ checkedValues: {} });
+
+  const Menu = ({ children, checkedValues, onCheckedValueChange }: any) => (
+    <MenuCheckedContext.Provider value={{ checkedValues: checkedValues ?? {}, onCheckedValueChange }}>
+      {children}
+    </MenuCheckedContext.Provider>
+  );
   const MenuTrigger = ({ children }: any) => <>{children}</>;
   const MenuPopover = ({ children }: any) => <div data-testid="fluent-menu-popover">{children}</div>;
   const MenuList = ({ children }: any) => <div role="menu">{children}</div>;
@@ -45,6 +59,44 @@ vi.mock('@fluentui/react-components', () => {
     </div>
   );
 
+  const MenuItemRadio = ({ children, disabled, name, value }: any) => {
+    const { checkedValues, onCheckedValueChange } = React.useContext(MenuCheckedContext);
+    const checked = (checkedValues[name] ?? []).includes(value);
+    return (
+      <div
+        aria-checked={checked}
+        aria-disabled={disabled}
+        onClick={
+          disabled ? undefined : (e: unknown) => onCheckedValueChange?.(e, { name, checkedItems: [value] })
+        }
+        role="menuitemradio"
+      >
+        {children}
+      </div>
+    );
+  };
+
+  const MenuItemCheckbox = ({ children, disabled, name, value, secondaryContent }: any) => {
+    const { checkedValues, onCheckedValueChange } = React.useContext(MenuCheckedContext);
+    const checked = (checkedValues[name] ?? []).includes(value);
+    return (
+      <div
+        aria-checked={checked}
+        aria-disabled={disabled}
+        onClick={
+          disabled
+            ? undefined
+            : (e: unknown) =>
+                onCheckedValueChange?.(e, { name, checkedItems: checked ? [] : [value] })
+        }
+        role="menuitemcheckbox"
+      >
+        {children}
+        <span data-testid="secondary">{secondaryContent}</span>
+      </div>
+    );
+  };
+
   const MenuDivider = ({ className }: any) => <hr className={className} />;
   const MenuGroupHeader = ({ children }: any) => <div role="presentation">{children}</div>;
 
@@ -54,21 +106,18 @@ vi.mock('@fluentui/react-components', () => {
     MenuPopover,
     MenuList,
     MenuItem,
+    MenuItemRadio,
+    MenuItemCheckbox,
     MenuDivider,
     MenuGroupHeader,
     makeStyles: () => () => ({
       root: 'root-class',
       trigger: 'trigger-class',
-      radioDot: 'radio-dot-class',
     }),
     mergeClasses: (...args: any[]) => args.filter(Boolean).join(' '),
     tokens: {},
   };
 });
-
-vi.mock('@fluentui/react-icons', () => ({
-  CheckmarkRegular: () => <svg data-testid="checkmark-icon" />,
-}));
 
 describe('FuiMenuBar', () => {
   it('renders a top-level menu trigger and its items', () => {
@@ -158,7 +207,7 @@ describe('FuiMenuBarCheckboxItem', () => {
     expect(handleCheckedChange).toHaveBeenCalledWith(true);
   });
 
-  it('renders a checkmark when checked', () => {
+  it('marks the item as checked', () => {
     render(
       <FuiMenuBar>
         <FuiMenuBarMenu label="View">
@@ -170,7 +219,6 @@ describe('FuiMenuBarCheckboxItem', () => {
     );
 
     expect(screen.getByRole('menuitemcheckbox')).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByTestId('checkmark-icon')).toBeInTheDocument();
   });
 });
 

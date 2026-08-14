@@ -3,6 +3,8 @@ import {
   MenuDivider,
   MenuGroupHeader,
   MenuItem,
+  MenuItemCheckbox,
+  MenuItemRadio,
   MenuList,
   MenuPopover,
   MenuTrigger,
@@ -10,7 +12,7 @@ import {
   mergeClasses,
   tokens,
 } from '@fluentui/react-components';
-import { CheckmarkRegular } from '@fluentui/react-icons';
+import type { MenuCheckedValueChangeData, MenuCheckedValueChangeEvent } from '@fluentui/react-components';
 import React from 'react';
 
 /** Matches Fluent's Slot shorthand value type, which is narrower than React.ReactNode. */
@@ -46,14 +48,53 @@ const useStyles = makeStyles({
       backgroundColor: tokens.colorNeutralBackground1Hover,
     },
   },
-  radioDot: {
-    display: 'inline-block',
-    width: '6px',
-    height: '6px',
-    borderRadius: tokens.borderRadiusCircular,
-    backgroundColor: 'currentColor',
-  },
 });
+
+/**
+ * MenuItemRadio/MenuItemCheckbox derive their `checked` state purely from a Menu-level
+ * `checkedValues: Record<name, string[]>` map — there is no direct `checked` prop. Since
+ * FuiMenuBarRadioGroup/FuiMenuBarCheckboxItem are each independently controlled by the caller
+ * (their own value/onChange props, not Fluent's checkedValues), this hook owns that shared map
+ * for one <Menu> tree: FuiMenuBarRadioGroup/FuiMenuBarCheckboxItem push their current value into
+ * it by name (so Fluent renders the right checkmark) and register a callback to translate Fluent's
+ * change events back into their own onValueChange/onCheckedChange.
+ */
+const useCheckedValuesRegistry = () => {
+  const [checkedValues, setCheckedValues] = React.useState<Record<string, string[]>>({});
+  const onChangeRegistry = React.useRef<Record<string, (values: string[]) => void>>({});
+
+  const setValues = React.useCallback((name: string, values: string[]) => {
+    setCheckedValues((prev) => ({ ...prev, [name]: values }));
+  }, []);
+
+  const registerOnChange = React.useCallback((name: string, onChange: (values: string[]) => void) => {
+    onChangeRegistry.current[name] = onChange;
+    return () => {
+      delete onChangeRegistry.current[name];
+    };
+  }, []);
+
+  const handleCheckedValueChange = React.useCallback(
+    (_event: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
+      setCheckedValues((prev) => ({ ...prev, [data.name]: data.checkedItems }));
+      onChangeRegistry.current[data.name]?.(data.checkedItems);
+    },
+    []
+  );
+
+  return { checkedValues, setValues, registerOnChange, handleCheckedValueChange };
+};
+
+type FuiMenuBarCheckedValuesContextValue = {
+  setValues: (name: string, values: string[]) => void;
+  registerOnChange: (name: string, onChange: (values: string[]) => void) => () => void;
+};
+
+const FuiMenuBarCheckedValuesContext =
+  React.createContext<FuiMenuBarCheckedValuesContextValue | null>(null);
+
+/** The `name` of the enclosing FuiMenuBarRadioGroup, read by FuiMenuBarRadioItem. */
+const FuiMenuBarRadioNameContext = React.createContext<string | null>(null);
 
 type FuiMenuBarProps = {
   /** Custom CSS class for the menu bar root. */
@@ -86,17 +127,22 @@ type FuiMenuBarMenuProps = {
 /** One top-level dropdown menu inside a FuiMenuBar. */
 const FuiMenuBarMenu: React.FC<FuiMenuBarMenuProps> = ({ label, disabled, children }) => {
   const styles = useStyles();
+  const { checkedValues, setValues, registerOnChange, handleCheckedValueChange } =
+    useCheckedValuesRegistry();
+
   return (
-    <Menu>
-      <MenuTrigger disableButtonEnhancement>
-        <button className={styles.trigger} disabled={disabled} type="button">
-          {label}
-        </button>
-      </MenuTrigger>
-      <MenuPopover>
-        <MenuList>{children}</MenuList>
-      </MenuPopover>
-    </Menu>
+    <FuiMenuBarCheckedValuesContext.Provider value={{ setValues, registerOnChange }}>
+      <Menu checkedValues={checkedValues} onCheckedValueChange={handleCheckedValueChange}>
+        <MenuTrigger disableButtonEnhancement>
+          <button className={styles.trigger} disabled={disabled} type="button">
+            {label}
+          </button>
+        </MenuTrigger>
+        <MenuPopover>
+          <MenuList>{children}</MenuList>
+        </MenuPopover>
+      </Menu>
+    </FuiMenuBarCheckedValuesContext.Provider>
   );
 };
 
@@ -141,6 +187,9 @@ type FuiMenuBarCheckboxItemProps = {
   children: React.ReactNode;
 };
 
+/** Fluent's checkedValues map needs a value per name; a single-toggle checkbox only ever uses this one. */
+const CHECKBOX_VALUE = 'checked';
+
 /** A toggleable entry inside a FuiMenuBarMenu. */
 const FuiMenuBarCheckboxItem: React.FC<FuiMenuBarCheckboxItemProps> = ({
   checked,
@@ -149,29 +198,33 @@ const FuiMenuBarCheckboxItem: React.FC<FuiMenuBarCheckboxItemProps> = ({
   shortcut,
   children,
 }) => {
+  const name = React.useId();
+  const context = React.useContext(FuiMenuBarCheckedValuesContext);
+  if (!context) {
+    throw new Error('FuiMenuBarCheckboxItem must be used within a FuiMenuBarMenu or FuiMenuBarSub');
+  }
+  const { setValues, registerOnChange } = context;
+
+  React.useEffect(() => {
+    setValues(name, checked ? [CHECKBOX_VALUE] : []);
+  }, [name, checked, setValues]);
+
+  React.useEffect(
+    () => registerOnChange(name, (values) => onCheckedChange(values.includes(CHECKBOX_VALUE))),
+    [name, onCheckedChange, registerOnChange]
+  );
+
   return (
-    <MenuItem
-      aria-checked={checked}
-      checkmark={checked ? <CheckmarkRegular /> : undefined}
+    <MenuItemCheckbox
       disabled={disabled}
-      onClick={() => onCheckedChange(!checked)}
-      persistOnClick
-      role="menuitemcheckbox"
+      name={name}
       secondaryContent={shortcut}
+      value={CHECKBOX_VALUE}
     >
       {children}
-    </MenuItem>
+    </MenuItemCheckbox>
   );
 };
-
-type FuiMenuBarRadioGroupContextValue = {
-  value: string;
-  onValueChange: (value: string) => void;
-};
-
-const FuiMenuBarRadioGroupContext = React.createContext<FuiMenuBarRadioGroupContextValue | null>(
-  null
-);
 
 type FuiMenuBarRadioGroupProps = {
   /** Controlled selected value. */
@@ -188,10 +241,30 @@ const FuiMenuBarRadioGroup: React.FC<FuiMenuBarRadioGroupProps> = ({
   onValueChange,
   children,
 }) => {
+  const name = React.useId();
+  const context = React.useContext(FuiMenuBarCheckedValuesContext);
+  if (!context) {
+    throw new Error('FuiMenuBarRadioGroup must be used within a FuiMenuBarMenu or FuiMenuBarSub');
+  }
+  const { setValues, registerOnChange } = context;
+
+  React.useEffect(() => {
+    setValues(name, [value]);
+  }, [name, value, setValues]);
+
+  React.useEffect(
+    () =>
+      registerOnChange(name, (values) => {
+        const newValue = values[0];
+        if (newValue !== undefined) {
+          onValueChange(newValue);
+        }
+      }),
+    [name, onValueChange, registerOnChange]
+  );
+
   return (
-    <FuiMenuBarRadioGroupContext.Provider value={{ value, onValueChange }}>
-      {children}
-    </FuiMenuBarRadioGroupContext.Provider>
+    <FuiMenuBarRadioNameContext.Provider value={name}>{children}</FuiMenuBarRadioNameContext.Provider>
   );
 };
 
@@ -205,29 +278,16 @@ type FuiMenuBarRadioItemProps = {
 };
 
 /** A single selectable entry inside a FuiMenuBarRadioGroup. */
-const FuiMenuBarRadioItem: React.FC<FuiMenuBarRadioItemProps> = ({
-  value,
-  disabled,
-  children,
-}) => {
-  const styles = useStyles();
-  const context = React.useContext(FuiMenuBarRadioGroupContext);
-  if (!context) {
+const FuiMenuBarRadioItem: React.FC<FuiMenuBarRadioItemProps> = ({ value, disabled, children }) => {
+  const name = React.useContext(FuiMenuBarRadioNameContext);
+  if (name === null) {
     throw new Error('FuiMenuBarRadioItem must be used within a FuiMenuBarRadioGroup');
   }
-  const selected = context.value === value;
 
   return (
-    <MenuItem
-      aria-checked={selected}
-      checkmark={selected ? <span className={styles.radioDot} /> : undefined}
-      disabled={disabled}
-      onClick={() => context.onValueChange(value)}
-      persistOnClick
-      role="menuitemradio"
-    >
+    <MenuItemRadio disabled={disabled} name={name} value={value}>
       {children}
-    </MenuItem>
+    </MenuItemRadio>
   );
 };
 
@@ -262,15 +322,20 @@ type FuiMenuBarSubProps = {
 
 /** A nested dropdown, triggered from within a parent FuiMenuBarMenu. */
 const FuiMenuBarSub: React.FC<FuiMenuBarSubProps> = ({ label, disabled, children }) => {
+  const { checkedValues, setValues, registerOnChange, handleCheckedValueChange } =
+    useCheckedValuesRegistry();
+
   return (
-    <Menu>
-      <MenuTrigger disableButtonEnhancement>
-        <MenuItem disabled={disabled}>{label}</MenuItem>
-      </MenuTrigger>
-      <MenuPopover>
-        <MenuList>{children}</MenuList>
-      </MenuPopover>
-    </Menu>
+    <FuiMenuBarCheckedValuesContext.Provider value={{ setValues, registerOnChange }}>
+      <Menu checkedValues={checkedValues} onCheckedValueChange={handleCheckedValueChange}>
+        <MenuTrigger disableButtonEnhancement>
+          <MenuItem disabled={disabled}>{label}</MenuItem>
+        </MenuTrigger>
+        <MenuPopover>
+          <MenuList>{children}</MenuList>
+        </MenuPopover>
+      </Menu>
+    </FuiMenuBarCheckedValuesContext.Provider>
   );
 };
 
