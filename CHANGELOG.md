@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.1] - 2026-08-15
+
+### Fixed
+
+- `FuiMenuBarRadioItem` / `FuiMenuBarCheckboxItem` didn't render their selection indicator. They now use Fluent's real `MenuItemRadio` / `MenuItemCheckbox` internally; the public API is unchanged.
+
 ## [1.0.0] - 2026-08-14
 
 ### 1. Naming convention standardized

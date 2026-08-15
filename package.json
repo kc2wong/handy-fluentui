@@ -1,6 +1,6 @@
 {
   "name": "handy-fluentui",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Handy React components built on top of FluentUI v9 with responsive, form-friendly behaviours",
   "license": "MIT",
   "keywords": [

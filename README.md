@@ -155,8 +155,8 @@ Every form input component (`FuiInputText`, `FuiInputDate`, `FuiRadioGroup`, ...
 | `noMessage` | `boolean` | `false` | Suppresses the message area and its reserved space |
 | `additionalMessage` | `ReactNode` | — | Extra content on the right of the message row |
 | `clearable` | `boolean` | `true` | Shows an eraser icon that clears the value |
-| `direction` | `'vertical' \| 'horizontal'` | `'vertical'` | Label position: above or to the left of the input |
-| `labelWidth` | `'small' \| 'medium' \| 'large' \| 'none'` | — | Fixed label width when `direction='horizontal'` |
+| `layout` | `'vertical' \| 'horizontal'` | `'vertical'` | Label position: above or to the left of the input |
+| `labelWidth` | `'quarter' \| 'third' \| 'half' \| 'auto'` | — | Fixed label width when `layout='horizontal'` |
 
 Horizontal layout automatically collapses to vertical on mobile.
 
