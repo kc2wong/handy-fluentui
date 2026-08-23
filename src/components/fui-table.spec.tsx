@@ -107,6 +107,9 @@ vi.mock('@fluentui/react-components', () => {
       ellipsis: 'ellipsis',
       headerRow: 'headerRow',
       row: 'row',
+      rowSmall: 'rowSmall',
+      rowMedium: 'rowMedium',
+      rowLarge: 'rowLarge',
     }),
     mergeClasses: (...args: any[]) => args.filter(Boolean).join(' '),
     tokens: {
@@ -606,6 +609,62 @@ describe('FuiTable', () => {
     const bodyRows = container.querySelectorAll('tbody tr');
     bodyRows.forEach((row) => {
       expect(row).toHaveClass('row');
+    });
+  });
+
+  it('does not apply any row-height class when rowHeight is omitted', () => {
+    const { container } = renderWithContext(
+      <FuiTable data={sampleData}>
+        <FuiColumn field="id" header="ID" />
+      </FuiTable>,
+    );
+
+    container.querySelectorAll('tbody tr').forEach((row) => {
+      expect(row).not.toHaveClass('rowSmall');
+      expect(row).not.toHaveClass('rowMedium');
+      expect(row).not.toHaveClass('rowLarge');
+    });
+  });
+
+  it.each([
+    ['small', 'rowSmall'],
+    ['medium', 'rowMedium'],
+    ['large', 'rowLarge'],
+  ] as const)('applies the %s rowHeight class to data rows', (rowHeight, expectedClass) => {
+    const { container } = renderWithContext(
+      <FuiTable data={sampleData} rowHeight={rowHeight}>
+        <FuiColumn field="id" header="ID" />
+      </FuiTable>,
+    );
+
+    container.querySelectorAll('tbody tr').forEach((row) => {
+      expect(row).toHaveClass(expectedClass);
+      expect(row).toHaveClass('row');
+    });
+  });
+
+  it('applies the rowHeight class to filler rows but not the header row', () => {
+    const pagination = {
+      offset: 0,
+      pageSize: 5,
+      totalRecord: 20,
+      pageSizeOption: [5, 10, 20],
+    };
+
+    const { container } = renderWithContext(
+      <FuiTable data={sampleData} pagination={pagination} rowHeight="small">
+        <FuiColumn field="id" header="ID" />
+      </FuiTable>,
+    );
+
+    const headerRow = container.querySelector('thead tr');
+    expect(headerRow).not.toHaveClass('rowSmall');
+
+    // sampleData has 2 items; filler rows = 5 - 2 = 3, all sharing the same render path as data rows.
+    const bodyRows = container.querySelectorAll('tbody tr');
+    expect(bodyRows).toHaveLength(5);
+    bodyRows.forEach((row) => {
+      expect(row).toHaveClass('rowSmall');
     });
   });
 

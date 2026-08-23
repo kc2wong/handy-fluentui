@@ -84,6 +84,9 @@ export type {
   FuiTableLabel,
 } from './components/fui-table';
 
+export { FuiTag } from './components/fui-tag';
+export type { FuiTagProps, FuiTagSize } from './components/fui-tag';
+
 export { FuiImageCarousel } from './components/fui-image-carousel';
 export type { FuiImageCarouselProps } from './components/fui-image-carousel';
 

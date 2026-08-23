@@ -113,6 +113,19 @@ const useStyles = makeStyles({
     minWidth: '90px',
     textAlign: 'center',
   },
+  // Literal style keys (not a class built from a computed height) so Griffel's build-time AST
+  // transform — which needs statically analyzable style objects — can extract these into atomic
+  // CSS. Matches handy-shadcnui's own ROW_HEIGHT_CLASS map (same 32/48/64px scale as its h-8/
+  // h-12/h-16 Tailwind classes).
+  rowSmall: {
+    height: tokens.spacingVerticalXXXL,
+  },
+  rowMedium: {
+    height: `calc(${tokens.spacingVerticalXXXL} + ${tokens.spacingVerticalL})`,
+  },
+  rowLarge: {
+    height: `calc(${tokens.spacingVerticalXXXL} + ${tokens.spacingVerticalXXXL})`,
+  },
 });
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -379,6 +392,14 @@ type FuiTableProps<T extends Record<string, unknown>> = {
    * Both `width` and `minWidth` are treated as the minimum — the table always fills available space.
    */
   width?: WidthProps;
+  /**
+   * Fixed row height, applied to both data rows and filler rows (the blank rows padding a
+   * short page up to `pagination.pageSize`). Without this, row height is left to each row's
+   * own content, so a filler row can render shorter than a row whose columns render
+   * badges/buttons/etc — set this whenever that mismatch matters, picking whichever size
+   * comfortably fits the tallest cell content in your columns.
+   */
+  rowHeight?: 'small' | 'medium' | 'large' | undefined;
   /** Label overrides for pagination text. */
   langLabel?: FuiTableLabel;
   children: React.ReactNode;
@@ -389,6 +410,7 @@ const FuiTable = <T extends Record<string, unknown>>({
   data,
   onPageOrSort,
   pagination,
+  rowHeight,
   width,
   langLabel,
   children,
@@ -457,6 +479,10 @@ const FuiTable = <T extends Record<string, unknown>>({
     ? gridColumns.find((gc) => String(gc.columnId).startsWith(`${sortField}_`))?.columnId
     : undefined;
 
+  const rowHeightClassName = rowHeight
+    ? { small: styles.rowSmall, medium: styles.rowMedium, large: styles.rowLarge }[rowHeight]
+    : undefined;
+
   const fillerRowsCount = pagination ? Math.max(0, pagination.pageSize - data.length) : 0;
   const allItems = [
     ...data,
@@ -514,7 +540,11 @@ const FuiTable = <T extends Record<string, unknown>>({
 
           <DataGridBody<T>>
             {({ item, rowId }) => (
-              <DataGridRow<T> key={rowId} className={styles.row}>
+              // Real rows and filler rows (marked _isFiller above) both flow through this one
+              // render path, so applying rowHeightClassName here covers both — unlike
+              // handy-shadcnui's hand-composed <TableRow>s, which needed the same class name
+              // applied at two separate call sites.
+              <DataGridRow<T> key={rowId} className={mergeClasses(styles.row, rowHeightClassName)}>
                 {({ renderCell, columnId }) => {
                   const colIdx = parseInt(String(columnId).split('_').pop() || '0');
                   const col = columns[colIdx];

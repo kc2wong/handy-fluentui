@@ -168,4 +168,24 @@ describe('InputDropdown (desktop)', () => {
 
     expect(screen.getByPlaceholderText('Select something...')).toBeInTheDocument();
   });
+
+  it('renders contentBefore inside the dropdown', () => {
+    render(
+      <FuiInputDropdown
+        contentBefore={<span data-testid="leading-icon" />}
+        label="Choice"
+        onChange={() => {}}
+        options={options}
+        value={null}
+      />,
+    );
+
+    expect(screen.getByTestId('leading-icon')).toBeInTheDocument();
+  });
+
+  it('does not render a contentBefore wrapper when contentBefore is omitted', () => {
+    render(<FuiInputDropdown label="Choice" onChange={() => {}} options={options} value={null} />);
+
+    expect(screen.queryByTestId('leading-icon')).not.toBeInTheDocument();
+  });
 });
