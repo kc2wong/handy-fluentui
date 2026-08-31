@@ -4,6 +4,7 @@ import {
   OptionGroup,
   Input,
   makeStyles,
+  mergeClasses,
   tokens,
   Listbox,
 } from '@fluentui/react-components';
@@ -33,6 +34,27 @@ const useStyles = makeStyles({
     paddingLeft: tokens.spacingHorizontalXXL,
     paddingRight: tokens.spacingHorizontalXXL,
   },
+  dropdownWrapper: {
+    position: 'relative',
+  },
+  contentBefore: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: tokens.spacingHorizontalS,
+    margin: 'auto',
+    display: 'flex',
+    alignItems: 'center',
+    pointerEvents: 'none',
+    color: tokens.colorNeutralForeground3,
+    zIndex: 1,
+  },
+  buttonWithContentBefore: {
+    // Room for the overlaid icon: its own left inset (spacingHorizontalS, matching
+    // `contentBefore.left` above) + a default-sized icon (fontSizeBase400) + a small gap
+    // (spacingHorizontalXS) before the value text starts.
+    paddingLeft: `calc(${tokens.spacingHorizontalS} + ${tokens.fontSizeBase400} + ${tokens.spacingHorizontalXS})`,
+  },
 });
 
 type FuiInputDropdownOption = {
@@ -57,6 +79,8 @@ type BaseInputDropdownProps = {
   /** When true, change events are silently swallowed. Defaults to false. */
   readOnly?: boolean;
   disabled?: boolean;
+  /** Content rendered inside the dropdown box, left-aligned (e.g. an icon). */
+  contentBefore?: React.ReactElement;
   /** Custom CSS class for the dropdown root. */
   className?: string;
   /** Custom CSS styles for the dropdown root. */
@@ -159,6 +183,7 @@ const MobileDropdown: React.FC<BaseInputDropdownProps & { id?: string; drawerTit
     readOnly = false,
     drawerTitle,
     id,
+    contentBefore,
   } = props;
 
   const styles = useStyles();
@@ -184,6 +209,7 @@ const MobileDropdown: React.FC<BaseInputDropdownProps & { id?: string; drawerTit
             style={{ cursor: 'pointer' }}
           />
         }
+        contentBefore={contentBefore}
         disabled={disabled}
         id={id}
         onClick={() => setIsDrawerOpen(true)}
@@ -245,8 +271,10 @@ const RawInputDropdown: React.FC<BaseInputDropdownProps & { id?: string; drawerT
     className,
     listbox,
     positioning,
+    contentBefore,
   } = props;
   const isMobile = useIsMobile();
+  const styles = useStyles();
   const { selectedValues, displayValue, groupedOptions } = useDropdownValues(value, options);
 
   if (isMobile) {
@@ -257,10 +285,11 @@ const RawInputDropdown: React.FC<BaseInputDropdownProps & { id?: string; drawerT
     onChange(computeNewSelection(val, selectedValues, multiselect));
   };
 
-  return (
+  const dropdown = (
     <Dropdown
       aria-labelledby={id}
-      className={className}
+      button={contentBefore ? { className: styles.buttonWithContentBefore } : undefined}
+      className={contentBefore ? undefined : className}
       disabled={disabled}
       id={id}
       listbox={listbox}
@@ -273,11 +302,26 @@ const RawInputDropdown: React.FC<BaseInputDropdownProps & { id?: string; drawerT
       placeholder={placeholder}
       positioning={positioning}
       selectedOptions={selectedValues}
-      style={{ width: '100%', ...style }}
+      style={contentBefore ? { width: '100%' } : { width: '100%', ...style }}
       value={displayValue}
     >
       {renderGroupedOptions(groupedOptions)}
     </Dropdown>
+  );
+
+  if (!contentBefore) {
+    return dropdown;
+  }
+
+  // Unlike FuiInputText/FuiInputTime, Dropdown has no native contentBefore slot (its `button`
+  // slot renders the selected-value text internally, not via children) — so the icon is
+  // overlaid on a relatively-positioned wrapper instead, with matching left padding pushed
+  // onto the button slot to keep the value text from sitting underneath it.
+  return (
+    <div className={mergeClasses(styles.dropdownWrapper, className)} style={style}>
+      <span className={styles.contentBefore}>{contentBefore}</span>
+      {dropdown}
+    </div>
   );
 };
 
