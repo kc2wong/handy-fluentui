@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.2] - 2026-08-31
+
+### Added
+
+- `FuiTag` — a new small pill component for a single clickable or removable value (e.g. an active
+  filter tag), built on Fluent's own `Tag` component (a closer fit than `Badge`).
+- `FuiDivider` gains a `vertical` prop, forwarded to Fluent's native `Divider`.
+- `FuiInputDropdown` gains `contentBefore` (a leading icon slot): the mobile layout uses Fluent
+  `Input`'s own native `contentBefore` slot; desktop (Fluent's `Dropdown` has no such slot) overlays
+  it on a relatively-positioned wrapper with matching padding on the button slot instead.
+- `FuiTable` gains `rowHeight` (`'small' | 'medium' | 'large'`), applied to `DataGridRow`.
+
+Ports handy-shadcnui's own `HuiDivider`/`HuiInputDropdown`/`HuiTable`/`HuiTag` additions onto their
+Fluent UI equivalents. All new fixed pixel values use `@fluentui/tokens` spacing/font-size tokens
+rather than literals.
+
 ## [1.0.1] - 2026-08-15
 
 ### Fixed
